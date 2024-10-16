@@ -14,8 +14,8 @@ public:
   int keyHalfStrip() const {return theKeyHalfStrip;}
   int nLayersWithHits() const {return nlayersWithHits;}
   int patternRank() const {return thePatternRank;}
-  double* stripHits() {return sHits;}
-  int* nLayerHits() {return nHits;}
+  double* stripHits()  {return stripHitsPosition;}
+  int*    nLayerHits() {return numberOfHitsInLayer;}
 
   void updateSHits(double* sHits2, int* nHits2);
 
@@ -29,9 +29,10 @@ private:
   int theKeyHalfStrip;
   int nlayersWithHits;
   int thePatternRank;
-  double sHits[6];
-  int nHits[6]; // number of shits in each layer
+  double stripHitsPosition[6];
+  int numberOfHitsInLayer[6]; // number of shits in each layer
 
+  
   double GetMean(TH1D* h1);
   // TH2F* stripPattern
 
