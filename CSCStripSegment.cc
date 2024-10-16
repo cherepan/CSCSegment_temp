@@ -7,25 +7,24 @@ CSCStripSegment::CSCStripSegment(int halfStrip,
                                int nLayer,
                                int patternRank,
                                TH2F* stripSegHist) :
-   theKeyHalfStrip( halfStrip ),
-   nlayersWithHits( nLayer ),
-   thePatternRank( patternRank )
+   theKeyHalfStrip( halfStrip   ),
+   nlayersWithHits( nLayer      ),
+   thePatternRank(  patternRank )
 
 {
 
-  //   std::cout << "halfstrip#: " << halfStrip << ", patternRank: " << patternRank << ", nLayer: " << nLayer << std::endl;
-
    TH1D* sHitHists[6];
    TH1D* nHitHists = stripSegHist->ProjectionY("nLayerHits",0,-1);
-   for (int i = 0; i < 6; i++) {
+   for (int i = 0; i < 6; i++)
+     {
 
        sHitHists[i] = stripSegHist->ProjectionX("layer"+TString(i+1),i+1,i+1);
        sHits[i] = sHitHists[i]->GetMean()+0.5;
-//       sHits[i] = GetMean(sHitHists[i]);
-if (sHitHists[i]->GetMean() == 0) sHits[i] = 0;
+       //       sHits[i] = GetMean(sHitHists[i]);
+       if (sHitHists[i]->GetMean() == 0) sHits[i] = 0;
        nHits[i] = nHitHists->GetBinContent(i+1);
-//std::cout << "sHitHists[i]->GetMean(): " << sHitHists[i]->GetMean() << std::endl;
-   }
+       //std::cout << "sHitHists[i]->GetMean(): " << sHitHists[i]->GetMean() << std::endl;
+     }
 
 }
 
@@ -36,15 +35,16 @@ CSCStripSegment::~CSCStripSegment() {}
 void CSCStripSegment::updateSHits(double* sHits2, int* nHits2)
 {
 
-   for (int i = 0; i < 6; i++) {
-
+   for (int i = 0; i < 6; i++)
+     {
+       
        if (nHits[i]+nHits2[i] > 0) 
-          {
-	    sHits[i] = (sHits[i]*nHits[i] + sHits2[i]*nHits2[i] ) / (nHits[i]+nHits2[i]);
-	  }
+	 {
+	   sHits[i] = (sHits[i]*nHits[i] + sHits2[i]*nHits2[i] ) / (nHits[i]+nHits2[i]);
+	 }
        nHits[i] = nHits[i]+nHits2[i];
-
-       }
+       
+     }
 
 }
 

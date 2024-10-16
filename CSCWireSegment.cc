@@ -3,8 +3,8 @@
 
 CSCWireSegment::CSCWireSegment() {}
 
-CSCWireSegment::CSCWireSegment(int wg,
-                               int nLayer,
+CSCWireSegment::CSCWireSegment(int   wg,
+                               int   nLayer,
                                TH2F* wireSegHist) :
    theKeyWG( wg ),
    nlayersWithHits( nLayer )
@@ -13,9 +13,9 @@ CSCWireSegment::CSCWireSegment(int wg,
 {
 
    TH1D* wHitHists[6];
-   TH1D* nHitHists = wireSegHist->ProjectionY("nLayerHits",0,-1);
+   TH1D* nHitHists = wireSegHist->ProjectionY("nLayerHits", 0, -1);
    
-   for (int i = 0; i < 6; i++)
+   for (int i = 0; i < 6; i++) 
      {
 
        wHitHists[i] = wireSegHist->ProjectionX("layer"+TString(i+1), i+1, i+1);
@@ -32,7 +32,7 @@ CSCWireSegment::CSCWireSegment(int wg,
 
        
        nHitsInLayer[i] = nHitHists->GetBinContent(i+1);
-       std::cout<<"CSCWireSegment:  nHits   "<<  nHitHists->GetBinContent(i+1)  << std::endl;
+       //       std::cout<<"CSCWireSegment:  nHits   "<<  nHitHists->GetBinContent(i+1)  << std::endl;
        
      }
 
@@ -45,28 +45,22 @@ CSCWireSegment::~CSCWireSegment() {}
 
 
 
-void CSCWireSegment::updateWHits(double* wHits2, int* nHits2)  // no clue what it's doing
+void CSCWireSegment::updateWHits(double* NextSegmentWireHitsPosition, int* NextSegmentNHits)
+// This way of merging segments to be tested.
+// If second segment is 1 WG apart merge two in a big segment, computing in each layer center of gravity of two segments
 {
 
    for (int i = 0; i < 6; i++)
      {
-       //       std::cout<<"  nHits[i]+nHits2[i]  " << nHitsInLayer[i] + nHits2[i] <<  "   true or false  "<< (nHitsInLayer[i] + nHits2[i]) << "   wireHitPosition    " << wireHitPosition[i] <<std::endl;
-
-       std::cout<<"============  BEFORE   layer    "<< i << "  nHits    " << nHitsInLayer[i] << "  positions   "<< wireHitPosition[i]  <<std::endl;
-       std::cout<<"============  adj      layer    "<< i << "  nHits    " << nHits2[i] << "  positions   "<< wHits2[i]  <<std::endl;
-       
-       if( (nHitsInLayer[i] + nHits2[i]) != 0)  // if layer is not empty
+       if( (nHitsInLayer[i] + NextSegmentNHits[i]) != 0)  // if layer is not empty
 	 {
-	   //	   if((nHitsInLayer[i] + nHits2[i]) == 1) std::cout<<"  nHitsInLayer   "<< nHitsInLayer[i] << " adjacent    "<< nHits2[i] <<std::endl;
 	   
-	   wireHitPosition[i] = ( wireHitPosition[i]*nHitsInLayer[i]  +  wHits2[i]*nHits2[i] ) / ( nHitsInLayer[i] + nHits2[i] );
-
+	   wireHitPosition[i] = ( wireHitPosition[i]*nHitsInLayer[i]  +  NextSegmentWireHitsPosition[i]* NextSegmentNHits [i] ) / ( nHitsInLayer[i] + NextSegmentNHits[i] );
 	   
 	 }
        
-       nHitsInLayer[i] = nHitsInLayer[i] + nHits2[i];
-       std::cout<<"============  AFTER  layer    "<< i << "  nHits    " << nHitsInLayer[i] << "  positions   "<< wireHitPosition[i]  <<std::endl;
-       //       std::cout<<" UPDATED   nHits[i]+nHits2[i]  " << (nHitsInLayer[i]+nHits2[i]) << "   wireHitPosition    " << wireHitPosition[i] <<std::endl;
+       nHitsInLayer[i] = nHitsInLayer[i] + NextSegmentNHits [i];
+
      }
 }
 
@@ -79,7 +73,6 @@ double CSCWireSegment::comHitLow()
 
   for (int i = 0; i < 6; i++)
     {
-
       double tmpHit = wireHitPosition[i];
       if (tmpHit < low && wireHitPosition[i] > 0) low = tmpHit;
       
