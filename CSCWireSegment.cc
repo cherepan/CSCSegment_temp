@@ -19,10 +19,10 @@ CSCWireSegment::CSCWireSegment(int   wg,
      {
 
        wHitHists[i] = wireSegHist->ProjectionX("layer"+TString(i+1), i+1, i+1);
-       wireHitPosition[i] = wHitHists[i]->GetMean() + 0.5;
+       HitPosition[i] = wHitHists[i]->GetMean() + 0.5;
        std::cout<<"CSCWireSegment:  csc wire segment  "<< wHitHists[i]->GetMean() + 0.5  << std::endl;
        
-       if (wHitHists[i]->GetMean() == 0) wireHitPosition[i] = 0;
+       if (wHitHists[i]->GetMean() == 0) HitPosition[i] = 0;
 
        
        // wHits[i] = GetMean(wHitHists[i]);
@@ -43,8 +43,6 @@ CSCWireSegment::~CSCWireSegment() {}
 
 
 
-
-
 void CSCWireSegment::updateWHits(double* NextSegmentWireHitsPosition, int* NextSegmentNHits)
 // This way of merging segments to be tested.
 // If second segment is 1 WG apart merge two in a big segment, computing in each layer center of gravity of two segments
@@ -55,7 +53,7 @@ void CSCWireSegment::updateWHits(double* NextSegmentWireHitsPosition, int* NextS
        if( (nHitsInLayer[i] + NextSegmentNHits[i]) != 0)  // if layer is not empty
 	 {
 	   
-	   wireHitPosition[i] = ( wireHitPosition[i]*nHitsInLayer[i]  +  NextSegmentWireHitsPosition[i]* NextSegmentNHits [i] ) / ( nHitsInLayer[i] + NextSegmentNHits[i] );
+	   HitPosition[i] = ( HitPosition[i]*nHitsInLayer[i]  +  NextSegmentWireHitsPosition[i]* NextSegmentNHits [i] ) / ( nHitsInLayer[i] + NextSegmentNHits[i] );
 	   
 	 }
        
@@ -73,8 +71,10 @@ double CSCWireSegment::comHitLow()
 
   for (int i = 0; i < 6; i++)
     {
-      double tmpHit = wireHitPosition[i];
-      if (tmpHit < low && wireHitPosition[i] > 0) low = tmpHit;
+      
+      double tmpHit = HitPosition[i];
+      
+      if (tmpHit < low && HitPosition[i] > 0) low = tmpHit;
       
     }
 
@@ -91,9 +91,9 @@ double CSCWireSegment::comHitHigh()
   for (int i = 0; i < 6; i++)
     {
       
-      double tmpHit = wireHitPosition[i];
+      double tmpHit = HitPosition[i];
       
-      if (tmpHit > high && wireHitPosition[i] > 0) high = tmpHit;
+      if (tmpHit > high && HitPosition[i] > 0) high = tmpHit;
       
     }
 
@@ -101,6 +101,16 @@ double CSCWireSegment::comHitHigh()
 
 }
 
+void CSCWireSegment::printSegment()
+{
+  std::cout<<"  >>>> Print Wire Segment with key WG  "<< theKeyWG << std::endl;
+  for (int i = 0; i < 6; i++)
+    {
+      std::cout<<"  Layer:   "<< i  << "  position:  "<< HitPosition[i] << "  n hits  "<< nHitsInLayer[i] <<std::endl;
+
+    }
+  
+}
 
 
 /*

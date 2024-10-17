@@ -15,10 +15,11 @@ public:
   int keyWG() const { return theKeyWG; }
   int nLayersWithHits() const { return nlayersWithHits; }
   
-  double* wireHits()   {return wireHitPosition;}
+  double* wireHitsPosition()   {return HitPosition;}
   int*    nLayerHits() {return nHitsInLayer;}
 
   void   updateWHits(double* wHits2, int* nHits2);
+  void   printSegment();
   double comHitLow();
   double comHitHigh();
   TH2F*  getPatternMatrix() { return wirePattern; }
@@ -29,7 +30,7 @@ private:
 
   int theKeyWG;
   int nlayersWithHits;
-  double wireHitPosition[6] ;    // wire hit position in each layer
+  double HitPosition[6] ;           // wire hit position in each layer
   int    nHitsInLayer[6];               // number of wire hits in each layer
 
   //  double GetMean(TH1D* h1);  // to be removed, unused
