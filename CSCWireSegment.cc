@@ -64,10 +64,10 @@ void CSCWireSegment::updateWHits(double* NextSegmentWireHitsPosition, int* NextS
 
 
 
-double CSCWireSegment::comHitLow()
+double CSCWireSegment::LowestHitInLayer()
 {
 
-  double low = 120;
+  double low = 120; // why 120 ??    Low is low, why this idiotic logic????
 
   for (int i = 0; i < 6; i++)
     {
@@ -83,7 +83,7 @@ double CSCWireSegment::comHitLow()
 }
 
 
-double CSCWireSegment::comHitHigh()
+double CSCWireSegment::HighestHitInLayer()
 {
 
   double high = -1;
@@ -101,9 +101,9 @@ double CSCWireSegment::comHitHigh()
 
 }
 
-void CSCWireSegment::printSegment()
+void CSCWireSegment::printWireSegment()
 {
-  std::cout<<"  >>>> Print Wire Segment with key WG  "<< theKeyWG << std::endl;
+  std::cout<<"  ===>>>>>>>> Print Wire Segment with key WG  "<< theKeyWG << std::endl;
   for (int i = 0; i < 6; i++)
     {
       std::cout<<"  Layer:   "<< i  << "  position:  "<< HitPosition[i] << "  n hits  "<< nHitsInLayer[i] <<std::endl;

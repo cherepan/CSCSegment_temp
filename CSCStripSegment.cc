@@ -51,7 +51,7 @@ void CSCStripSegment::updateSHits(double* NextSegmentStripHitsPosition, int* Nex
 }
 
 
-double CSCStripSegment::comHitLow(bool isME11)
+double CSCStripSegment::LowestHitInLayer(bool isME11)
 {
 
   double low = 161;
@@ -69,7 +69,7 @@ double CSCStripSegment::comHitLow(bool isME11)
 }
 
 
-double CSCStripSegment::comHitHigh(bool isME11)
+double CSCStripSegment::HighestHitInLayer(bool isME11)
 {
 
   double high = -1;
@@ -83,6 +83,19 @@ double CSCStripSegment::comHitHigh(bool isME11)
       }
 
   return high;
+
+}
+
+
+void CSCStripSegment::printStripSegment()
+{
+
+  std::cout<<"  >>>>>>>> Print Strip Segment with key half strip  "<< theKeyHalfStrip << std::endl;
+  for (int i = 0; i < 6; i++)
+    {
+      std::cout<<"  Layer:   "<< i  << "  position:  "<< stripHitsPosition[i] << "  n hits  "<< numberOfHitsInLayer[i] <<std::endl;
+
+    }
 
 }
 

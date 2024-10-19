@@ -19,9 +19,9 @@ public:
   int*    nLayerHits() {return nHitsInLayer;}
 
   void   updateWHits(double* wHits2, int* nHits2);
-  void   printSegment();
-  double comHitLow();
-  double comHitHigh();
+  void   printWireSegment();
+  double LowestHitInLayer();
+  double HighestHitInLayer();
   TH2F*  getPatternMatrix() { return wirePattern; }
   
   ~CSCWireSegment();

@@ -16,11 +16,11 @@ public:
   int patternRank() const {return thePatternRank;}
   double* stripHits()  {return stripHitsPosition;}
   int*    nLayerHits() {return numberOfHitsInLayer;}
-
+  void printStripSegment();
   void updateSHits(double* sHits2, int* nHits2);
 
-  double comHitLow(bool isME11);
-  double comHitHigh(bool isME11);
+  double LowestHitInLayer(bool isME11);
+  double HighestHitInLayer(bool isME11);
 
   ~CSCStripSegment();
 
