@@ -1,2 +1,2 @@
 # CSCSegment_temp
-Temporary repo, to keep codes tracked. CSCSegment/src
+Temporary repo, to keep codes quickly available. CSCSegment/src
