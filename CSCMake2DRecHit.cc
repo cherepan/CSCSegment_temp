@@ -69,10 +69,10 @@ CSCRecHit2D CSCMake2DRecHit::hitFromStripAndWire(const CSCDetId& id, const CSCLa
   float Mwire1 = layergeom_->middleWireOfGroup( wg_left );
   float Mwire2 = layergeom_->middleWireOfGroup( wg_right );
   
-  int centerWire_left = (int) (Mwire1 - Nwires1 / 2. + 0.5);
+  int centerWire_left  = (int) (Mwire1 - Nwires1 / 2. + 0.5);
   int centerWire_right = (int) (Mwire2 + Nwires2 / 2.);
   
-  float centerWire = (centerWire_left + centerWire_right) / 2.;
+  float centerWire     = (centerWire_left + centerWire_right) / 2.;
 
   //---- WGs around dead HV segment regions may need special treatment...
   //---- This is not addressed here.
