@@ -60,7 +60,7 @@ public:
     std::vector<CSCSegment> buildSegments(const ChamberWireHitContainer  & wirehits, 
                                           const ChamberStripHitContainer & striphits);
 
-    void FillWireMatrix( TH2F* whitsMatrix, ChamberWireHitContainer whits);
+    void FillWireMatrix( TH2F* whitsMatrix, ChamberWireHitContainer  whits);
     void FillStripMatrix(TH2F* shitsMatrix, ChamberStripHitContainer shits);
 
   
@@ -71,9 +71,10 @@ public:
     void GetWireHitFromWireSeg  (CSCWireSegment  wireSeg,  ChamberWireHitContainer  whits, int* wireHitIndex);
     void GetStripHitFromStripSeg(CSCStripSegment stripSeg, ChamberStripHitContainer shits, int* stripHitIndex);
 
-    CSCSegment doPrune(ChamberHitContainer rechits, CSCSegment oldSeg);
 
     std::vector< CSCSegment > prune_bad_hits(const CSCChamber* aChamber, std::vector< CSCSegment > & segments);
+
+  
 
     void WriteTH2F(TH2F* hist);
 

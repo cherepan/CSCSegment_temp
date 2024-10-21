@@ -212,13 +212,15 @@ void CSCSegFit::fitlsq(void) {
 
   SVector4 p;
   bool ok = M.Invert();
-  if (!ok ){
-    edm::LogVerbatim("CSCSegment|CSCSegFit") << "[CSCSegFit::fit] Failed to invert matrix: \n" << M;
-    //    return ok; //@@ SHOULD PASS THIS BACK TO CALLER?
-  }
-  else {
-    p = M * B;
-  }
+  if (!ok )
+    {
+      edm::LogVerbatim("CSCSegment|CSCSegFit") << "[CSCSegFit::fit] Failed to invert matrix: \n" << M;
+      //    return ok; //@@ SHOULD PASS THIS BACK TO CALLER?
+    }
+  else
+    {
+      p = M * B;
+    }
 
   //  LogTrace("CSCSegFit") << "[CSCSegFit::fit] p = " 
   //        << p(0) << ", " << p(1) << ", " << p(2) << ", " << p(3);
