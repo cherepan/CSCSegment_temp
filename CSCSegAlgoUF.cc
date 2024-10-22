@@ -110,16 +110,16 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 
   
-  std::cout<<">>>>>>>>>>>>>>>>>>>>>>>  Before Scan for a Segment  "<< std::endl;  WriteTH2F(wireHitsInChamber_clone);
+
   
   std::list<CSCWireSegment> wireSegments;
   std::vector<TH2F*>        wireSegmentsTH2F;
   ScanForWireSeg(wireHitsInChamber, wireSegments, wireSegmentsTH2F, 6, true);
-  //  ScanForWireSeg(wireHitsInChamber, wireSegments, 5, false);
-  //  ScanForWireSeg(wireHitsInChamber, wireSegments, 4, false);
-  //  ScanForWireSeg(wireHitsInChamber, wireSegments, 3, false);
+  //  ScanForWireSeg(wireHitsInChamber, wireSegments, wireSegmentsTH2F, 5, false);
+  //  ScanForWireSeg(wireHitsInChamber, wireSegments, wireSegmentsTH2F, 4, false);
+  
 
-  std::cout<<">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  End SCan for a wire  Segment  "<< "   nSegments   "  << wireSegments.size() << std::endl;  WriteTH2F(wireHitsInChamber_clone);
+  std::cout<<"66666666666666666666666666  End SCan for a wire  Segment  for 6 layers "<< "   nSegments   "  << wireSegments.size() << std::endl;  WriteTH2F(wireHitsInChamber);
   for(auto s : wireSegments)
     {
       s.printWireSegment();  std::cout<<std::endl;
@@ -128,6 +128,23 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
     {
       WriteTH2F(sH); std::cout<<std::endl;
     }
+  std::cout<<"__________________________________________________________________________________ " << std::endl;
+
+  ScanForWireSeg(wireHitsInChamber, wireSegments, wireSegmentsTH2F,  3, false);
+
+
+
+  
+  std::cout<<"33333333333333333333333333  End SCan for a wire  Segment  for 3 layers "<< "   nSegments   "  << wireSegments.size() << std::endl;  WriteTH2F(wireHitsInChamber);
+  for(auto s : wireSegments)
+    {
+      s.printWireSegment();  std::cout<<std::endl;
+    }
+  for(auto sH : wireSegmentsTH2F)
+    {
+      WriteTH2F(sH); std::cout<<std::endl;
+    }
+
 
   
   std::list<CSCStripSegment> stripSegs;
@@ -143,6 +160,9 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
     ", nSegments: " << wireSegments.size() * stripSegs.size() << std::endl;
 
   
+
+
+
   
   for (auto i_wire = wireSegments.begin(); i_wire != wireSegments.end(); i_wire++)
     {
@@ -203,6 +223,13 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 
 
+
+
+
+
+
+
+	  
 
 // borrow from ST  //  What this part of code is doing ???
 	  
@@ -446,7 +473,7 @@ void CSCSegAlgoUF::ScanForWireSeg(TH2F* wireHitsInChamber, std::list<CSCWireSegm
 
 
 	 
-	 if (nonEmptyWG->GetBinContent(thisKeyWG) == 0 && // only scan non empty area, what about under/over flow ? need to check !
+	 if (nonEmptyWG->GetBinContent(thisKeyWG) == 0 && // only scan non empty area, what about under/over flow ? need to check ! (Vladimir: what are the under/overflow bins? )
 	     nonEmptyWG->GetBinContent(thisKeyWG+1) == 0 && nonEmptyWG->GetBinContent(thisKeyWG+2) == 0 ) continue;
 
 	 
@@ -475,7 +502,7 @@ void CSCSegAlgoUF::ScanForWireSeg(TH2F* wireHitsInChamber, std::list<CSCWireSegm
 	   double w_rows_scan[nWGsInPattern] = {};
 
 	   
-	   if (theStation == 3 || theStation == 4) //  invert the order for these chambers as layers are counted in opposite Z direction
+	   if (theStation == 3 || theStation == 4) //  invert the order for these chambers whose layers are counted in opposite Z direction
 	     for (int k = 0; k < nWGsInPattern; k++){w_rows_scan[k] = 5-w_rows[iPattern][k];}
 	   else
 	     for (int k = 0; k < nWGsInPattern; k++){ w_rows_scan[k] = w_rows[iPattern][k];}
@@ -531,6 +558,7 @@ void CSCSegAlgoUF::ScanForWireSeg(TH2F* wireHitsInChamber, std::list<CSCWireSegm
 
              if (abs(lastKeyWG - thisKeyWG) >  1)  // if two segments are far away by more than 1 WG -> create a new segment;
 	       {
+		 
 		 wireSegments.push_back(potentialAnotherSegment); //  if the WG difference between segment > 1 create the new segment
 		 wireSegmentsTH2F.push_back(actualSegment); 
 
