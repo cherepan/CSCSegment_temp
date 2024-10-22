@@ -20,7 +20,7 @@ CSCWireSegment::CSCWireSegment(int   wg,
 
        wHitHists[i] = wireSegHist->ProjectionX("layer"+TString(i+1), i+1, i+1);
        HitPosition[i] = wHitHists[i]->GetMean() + 0.5;
-       std::cout<<"CSCWireSegment:  csc wire segment  "<< wHitHists[i]->GetMean() + 0.5  << std::endl;
+       //std::cout<<"CSCWireSegment:  csc wire segment  "<< wHitHists[i]->GetMean() + 0.5  << std::endl;
        
        if (wHitHists[i]->GetMean() == 0) HitPosition[i] = 0;
 
