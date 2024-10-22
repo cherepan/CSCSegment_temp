@@ -64,7 +64,7 @@ public:
     void FillStripMatrix(TH2F* shitsMatrix, ChamberStripHitContainer shits);
 
   
-    void ScanForWireSeg( TH2F* wireHitsInChamber, std::list<CSCWireSegment>& wireSegs,   int nLayer, bool debug);
+    void ScanForWireSeg( TH2F* wireHitsInChamber, std::list<CSCWireSegment>& wireSegments, std::vector<TH2F*>& wireSegmentsTH2F/* <---- for debugging, to be removed */,  int nLayer, bool debug);
     void ScanForStripSeg(TH2F* sHitsPerChamber, std::list<CSCStripSegment>& stripSegs, int nLayer);
 
   

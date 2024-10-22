@@ -22,7 +22,7 @@ double w_data_4[nWireGroup_4] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
 
 const int nDefinedWirePatterns = 4;
 int nWGsInPatterns[nDefinedWirePatterns] = {nWireGroup_1, nWireGroup_2, nWireGroup_3, nWireGroup_4};
-int patternRanks_w[nDefinedWirePatterns] = {1, 2, 3, 4};
+int patternRanks_w[nDefinedWirePatterns] = {1, 3, 2, 4};
 
 double* w_rows[nDefinedWirePatterns] = {w_rows_1, w_rows_2, w_rows_3, w_rows_4};
 double* w_cols[nDefinedWirePatterns] = {w_cols_1, w_cols_2, w_cols_3, w_cols_4};
