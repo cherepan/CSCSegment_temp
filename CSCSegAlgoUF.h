@@ -62,7 +62,7 @@ public:
 
   
     void ScanForWireSegment( TH2F* wireHitsInChamber, std::list<CSCWireSegment>& wireSegments, std::vector<TH2F*>& wireSegmentsTH2F, std::vector<int>& wireSegements_rank/* <---- for debugging, to be removed */,  int nLayer);
-  void ScanForStripSegment(TH2F* stripHitsInChamber, std::list<CSCStripSegment>& stripSegments, std::vector<TH2F*>& stripSegmentsTH2F, std::vector<int>& stripSegments_rank/* <---- for debugging, to be removed */, int nLayer);
+    void ScanForStripSegment(TH2F* stripHitsInChamber, std::list<CSCStripSegment>& stripSegments, std::vector<TH2F*>& stripSegmentsTH2F, std::vector<int>& stripSegments_rank/* <---- for debugging, to be removed */, int nLayer);
 
   
     void GetWireHitFromWireSegment  (CSCWireSegment  wireSeg,  ChamberWireHitContainer  whits, int* wireHitIndex);
@@ -77,7 +77,7 @@ public:
 
   
 
-    std::vector<CSCSegment> run(const CSCChamber* aChamber, const ChamberHitContainer& rechits, 
+    std::vector<CSCSegment> run(const CSCChamber* Chamber,  const ChamberHitContainer& rechits, 
                                                             const ChamberWireHitContainer& wirehits,
                                                             const ChamberStripHitContainer& striphits,
                                                             CSCRecoConditions* reco); 
@@ -114,8 +114,6 @@ private:
   
     const std::string myName; 
 		
-  
-    std::unique_ptr<CSCSegFit> sfit_;
     CSCRecoConditions* recoConditions_;
 
 };
