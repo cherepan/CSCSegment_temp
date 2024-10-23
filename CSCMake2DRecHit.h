@@ -61,11 +61,11 @@ class CSCMake2DRecHit
   
  private:
   
-  bool useCalib;
-  bool useTimingCorrections;
-  bool useGasGainCorrections;
-  int stripWireDeltaTime;
-  bool useGatti;
+  bool  useCalib;
+  bool  useTimingCorrections;
+  bool  useGasGainCorrections;
+  int   stripWireDeltaTime;
+  bool  useGatti;
   float maxGattiChi2;
 
   CSCXonStrip_MatchGatti* xMatchGatti_;  

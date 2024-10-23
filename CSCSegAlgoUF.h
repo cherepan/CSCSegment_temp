@@ -61,12 +61,12 @@ public:
     void FillStripMatrix(TH2F* shitsMatrix, ChamberStripHitContainer shits);
 
   
-    void ScanForWireSeg( TH2F* wireHitsInChamber, std::list<CSCWireSegment>& wireSegments, std::vector<TH2F*>& wireSegmentsTH2F, std::vector<int>& wireSegements_rank/* <---- for debugging, to be removed */,  int nLayer);
-  void ScanForStripSeg(TH2F* stripHitsInChamber, std::list<CSCStripSegment>& stripSegments, std::vector<TH2F*>& stripSegmentsTH2F, std::vector<int>& stripSegments_rank/* <---- for debugging, to be removed */, int nLayer);
+    void ScanForWireSegment( TH2F* wireHitsInChamber, std::list<CSCWireSegment>& wireSegments, std::vector<TH2F*>& wireSegmentsTH2F, std::vector<int>& wireSegements_rank/* <---- for debugging, to be removed */,  int nLayer);
+  void ScanForStripSegment(TH2F* stripHitsInChamber, std::list<CSCStripSegment>& stripSegments, std::vector<TH2F*>& stripSegmentsTH2F, std::vector<int>& stripSegments_rank/* <---- for debugging, to be removed */, int nLayer);
 
   
-    void GetWireHitFromWireSeg  (CSCWireSegment  wireSeg,  ChamberWireHitContainer  whits, int* wireHitIndex);
-    void GetStripHitFromStripSeg(CSCStripSegment stripSeg, ChamberStripHitContainer shits, int* stripHitIndex);
+    void GetWireHitFromWireSegment  (CSCWireSegment  wireSeg,  ChamberWireHitContainer  whits, int* wireHitIndex);
+    void GetStripHitFromStripSegment(CSCStripSegment stripSeg, ChamberStripHitContainer shits, int* stripHitIndex);
 
 
     std::vector< CSCSegment > prune_bad_hits(const CSCChamber* aChamber, std::vector< CSCSegment > & segments);
@@ -99,6 +99,8 @@ private:
                                     /// once it passed through Chi^2-X and  chi2Correction is big.
     double prePrunLimit_;           //  what the hell is this !!!!!!!??????????? It is not even initialised but somehow used in the code!!!!!!!!!!!!!
 
+
+
   
     int nWireGroups;
     int nStrips;
@@ -112,9 +114,6 @@ private:
   
     const std::string myName; 
 		
-    double theChi2;
-    LocalPoint theOrigin;
-    LocalVector theDirection;
   
     std::unique_ptr<CSCSegFit> sfit_;
     CSCRecoConditions* recoConditions_;

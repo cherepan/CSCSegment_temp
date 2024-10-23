@@ -319,6 +319,7 @@ float CSCMake2DRecHit::findWireBx(const std::vector <int>& timeBinsOn, float tpe
       wireBx=timeBinsOn[j];
     }
   }
+  
   int side= diffMin>0 ? 1 : -1;  // diffMin/fabs(diffMin);
   bool unchanged=true;
   // First check if bin on the same side as peak time is on
@@ -329,6 +330,7 @@ float CSCMake2DRecHit::findWireBx(const std::vector <int>& timeBinsOn, float tpe
       unchanged=false;
     }
   }
+  
   // If no match is found then check the other side
   if ((bestMatch - side)>-1 && (bestMatch-side)<(int)timeBinsOn.size() && unchanged) {       // Make sure one next to it exists
     if (timeBinsOn[bestMatch]==(timeBinsOn[bestMatch-side]+side)) {    // See if nextbin on is consecutive in time
