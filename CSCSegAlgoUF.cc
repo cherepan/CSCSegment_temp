@@ -102,11 +102,11 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
   
   TH2F* wireHitsInChamber = new TH2F("wireHitsInChamber", "", nWireGroups, 0, nWireGroups, 6 ,0, 6);
-  TH2F* sHitsPerChamber = new TH2F("sHitsPerChamber", "", 2*nStrips+1, 0, 2*nStrips+1, 6 ,0, 6); // half strip stagger at 1,3,5 layer
+  TH2F* stripHitsInChamber = new TH2F("stripHitsInChamber", "", 2*nStrips+1, 0, 2*nStrips+1, 6 ,0, 6); // half strip stagger at 1,3,5 layer
 
   
   FillWireMatrix(wireHitsInChamber,  wirehits);   TH2F* wireHitsInChamber_clone = (TH2F*)wireHitsInChamber->Clone("wireHitsInChamber_clone");
-  FillStripMatrix(sHitsPerChamber, striphits);    TH2F* sHitsPerChamber_clone = (TH2F*)sHitsPerChamber->Clone("sHitsPerChamber_clone");
+  FillStripMatrix(stripHitsInChamber, striphits);    TH2F* stripHitsInChamber_clone = (TH2F*)stripHitsInChamber->Clone("stripHitsInChamber_clone");
 
 
   
@@ -126,34 +126,17 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
   ScanForWireSeg(wireHitsInChamber, wireSegments, wireSegmentsTH2F, wireSegments_rank, 3);
 
 
-
-  /* // print out segment for debugging purposes
-  for(auto s : wireSegments)
-    {
-      s.printWireSegment();  std::cout<<std::endl;
-    }
-  for(auto sH : wireSegmentsTH2F)
-    {
-      PrintTH2F(sH); std::cout<<std::endl;
-    }
-  for(auto sR : wireSegments_rank)
-    {
-      std::cout<<" segment rank  "<< sR << std::endl;
-    }
-  */
-
-  
-  std::list<CSCStripSegment> stripSegs;
+  std::list<CSCStripSegment> stripSegments;
   std::vector<TH2F*>         stripSegmentsTH2F;
   std::vector<int>           stripSegments_rank;
 
   //  Call scans for segment 4 times, requestin 6,5,4 and 3 layers; stripSegments, stripSegmentsTH2F, stripSegments_rank
   //  are updated after every call; wireHitsInChamber -> actual wire hits are updated as well, hits that have alreavy
   //  been used are removed sequentially. 
-  ScanForStripSeg(sHitsPerChamber, stripSegs, stripSegmentsTH2F, stripSegments_rank,  6);
-  ScanForStripSeg(sHitsPerChamber, stripSegs, stripSegmentsTH2F, stripSegments_rank,  5);
-  ScanForStripSeg(sHitsPerChamber, stripSegs, stripSegmentsTH2F, stripSegments_rank,  4);
-  ScanForStripSeg(sHitsPerChamber, stripSegs, stripSegmentsTH2F, stripSegments_rank,  3);
+  ScanForStripSeg(stripHitsInChamber, stripSegments, stripSegmentsTH2F, stripSegments_rank,  6);
+  ScanForStripSeg(stripHitsInChamber, stripSegments, stripSegmentsTH2F, stripSegments_rank,  5);
+  ScanForStripSeg(stripHitsInChamber, stripSegments, stripSegmentsTH2F, stripSegments_rank,  4);
+  ScanForStripSeg(stripHitsInChamber, stripSegments, stripSegmentsTH2F, stripSegments_rank,  3);
 
 
 
@@ -161,9 +144,49 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 
   
+  // print out segment for debugging purposes
+  std::cout<<"  Wire  Hits in Chamber:  " << std::endl;
+  PrintTH2F(wireHitsInChamber_clone);
+  for(auto s : wireSegments)
+    {
+      s.printWireSegment();  std::cout<<std::endl;
+    }
+  std::cout<<" Built Strip Segments:   "<< std::endl;
+  for(auto sH : wireSegmentsTH2F)
+    {
+      PrintTH2F(sH); std::cout<<std::endl;
+    }
+  for(auto sR : wireSegments_rank)
+    {
+      std::cout<<"strip  segment rank  "<< sR << std::endl;
+    }
+  
+
+  
+  // print out segment for debugging purposes
+  std::cout<<"  Strip  Hits in Chamber:  " << std::endl;
+  PrintTH2F(stripHitsInChamber_clone);
+  for(auto s : stripSegments)
+    {
+      s.printStripSegment();  std::cout<<std::endl;
+    }
+  std::cout<<" Built Strip Segments:   "<< std::endl;
+  for(auto sH : stripSegmentsTH2F)
+    {
+      PrintTH2F(sH); std::cout<<std::endl;
+    }
+  for(auto sR : stripSegments_rank)
+    {
+      std::cout<<" segment rank  "<< sR << std::endl;
+    }
+
+
+
+
+  
   std::cout << theChamber->id() <<  ", nWireSegments: " << wireSegments.size() << 
-    ", nStripSegments: " << stripSegs.size() << 
-    ", nSegments: " << wireSegments.size() * stripSegs.size() << std::endl;
+    ", nStripSegments: " << stripSegments.size() << 
+    ", nSegments: " << wireSegments.size() * stripSegments.size() << std::endl;
 
 
 
@@ -174,7 +197,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
   
   for (auto i_wire = wireSegments.begin(); i_wire != wireSegments.end(); i_wire++)
     {
-    for (auto i_strip = stripSegs.begin(); i_strip != stripSegs.end(); i_strip++)
+    for (auto i_strip = stripSegments.begin(); i_strip != stripSegments.end(); i_strip++)
       {
 
 	CSCWireSegment  wireSeg  = *i_wire;
@@ -583,12 +606,7 @@ void CSCSegAlgoUF::ScanForWireSeg(TH2F* wireHitsInChamber, std::list<CSCWireSegm
 	       }
 	     */
 
-
-
-	     
-
              wireHitsInChamber->Add(wirePattern, -1); // delete wire group being used
-	     //             delete wirePattern;
 	     
 	   } // pattern loop
        } // WG loop
@@ -600,15 +618,15 @@ void CSCSegAlgoUF::ScanForWireSeg(TH2F* wireHitsInChamber, std::list<CSCWireSegm
 
 
 
-void CSCSegAlgoUF::ScanForStripSeg(TH2F* sHitsPerChamber, std::list<CSCStripSegment>& stripSegs, std::vector<TH2F*>& stripSegmentsTH2F, std::vector<int>& stripSegments_rank/* <---- for debugging, to be removed */, int nLayer)
+void CSCSegAlgoUF::ScanForStripSeg(TH2F* stripHitsInChamber, std::list<CSCStripSegment>& stripSegments, std::vector<TH2F*>& stripSegmentsTH2F, std::vector<int>& stripSegments_rank/* <---- for debugging, to be removed */, int nLayer)
 {
 
-     TH1D* nonEmptyStrip = sHitsPerChamber->ProjectionX();
+     TH1D* nonEmptyStrip = stripHitsInChamber->ProjectionX();
      
      for (int iStrip = 0; iStrip < nStrips*2+1; iStrip++) {
 
        
-         int thisKeyHalfStrip = iStrip+1;
+         int thisKeyHalfStrip = iStrip + 1;
 
          if (nonEmptyStrip->GetBinContent(iStrip+1) == 0 && // only scan non empty area, what about under/over flow ? need to check !
              nonEmptyStrip->GetBinContent(iStrip) == 0 && nonEmptyStrip->GetBinContent(iStrip+2) == 0 ) continue;
@@ -618,10 +636,10 @@ void CSCSegAlgoUF::ScanForStripSeg(TH2F* sHitsPerChamber, std::list<CSCStripSegm
 	   {
 	     // scan patterns sequentially, according to ranks
 	     // scan from high rank (high pt) patterns to low pt patterns
-	     if(sHitsPerChamber->Integral()==0) continue;  // dont continue if there are no hits or no hits left when strip segment is formed
+	     if(stripHitsInChamber->Integral()==0) continue;  // dont continue if there are no hits or no hits left when strip segment is formed
 	     
              int nhalfStrips = nHalfStrips[iStripPattern]; 
-             int thisRank = patternRanks[iStripPattern];
+             int thisRank    = patternRanks[iStripPattern];
              double s_cols_scan[nhalfStrips] = {};
 
 	     
@@ -646,62 +664,65 @@ void CSCSegAlgoUF::ScanForStripSeg(TH2F* sHitsPerChamber, std::list<CSCStripSegm
 
 	     
              TH2F* stripPattern = new TH2F("stripPattern","", nStrips*2+1, 0, nStrips*2+1, 6, 0, 6);
+             stripPattern->FillN(nhalfStrips,s_cols_scan,s_rows_scan,/*s_rows[j]*/s_data[iStripPattern]);
 
-             stripPattern->FillN(nhalfStrips,s_cols_scan,s_rows_scan,/*s_rows[j]*/s_data[iStripPattern]); 
-
-             stripPattern->Multiply(sHitsPerChamber); // scan is done here
-
-             TH1D* hitsLayer = stripPattern->ProjectionY();
-             hitsLayer->Divide(hitsLayer); 
-             int thisNLayer = hitsLayer->Integral(); // find layers with s hits
-
-             if (thisNLayer != nLayer)  // 3 or 4 is hardcode
-
-	       {
-		 
-		 delete stripPattern;
-		 continue;	       // here continue loop over patterns
-		 
-	       }
+	     
+             stripPattern->Multiply(stripHitsInChamber); // Multiply pattern and actual hits in the chamber
+	     TH2F* actualSegment  = stripPattern;
 
 
 	     
-             if (int(stripSegs.size()) == 0 )
+             TH1D* hitsLayer = stripPattern->ProjectionY(); //<- this histo is Y projection, so it's layers with hits
+	     hitsLayer->Divide(hitsLayer);                  //  normalised to itself
+             int thisNLayer = hitsLayer->Integral();        //  how many layers with hits 
+
+
+	     
+             if (thisNLayer != nLayer) continue;  // break the pattern loop if N layers with hits != to requested: 6,5,4,3
+
+
+	     
+             if (int(stripSegments.size()) == 0 )
 	       {
 
-		 stripSegs.push_back( CSCStripSegment(thisKeyHalfStrip, thisNLayer, thisRank, stripPattern) ); 
-		 sHitsPerChamber->Add(stripPattern,-1);
-		 
-		 delete stripPattern;
+		 stripSegments.push_back( CSCStripSegment(thisKeyHalfStrip, thisNLayer, thisRank, stripPattern) ); 
+		 stripHitsInChamber->Add(stripPattern,-1);
+		 stripSegmentsTH2F.push_back(actualSegment);
+		 stripSegments_rank.push_back(iStripPattern);
+
 		 continue;
 	       }
 
-             CSCStripSegment lastSegment = stripSegs.back();
+             CSCStripSegment lastSegment = stripSegments.back();
              int lastKeyHalfStrip = lastSegment.keyHalfStrip();
-	     //std::cout << "updated sPattern: " << std::endl; PrintTH2F(stripPattern);
-	     //std::cout << std::endl;
 
-             CSCStripSegment tmpStripSeg = CSCStripSegment(thisKeyHalfStrip,thisNLayer,thisRank,stripPattern);
+
+             CSCStripSegment potentialAnotherSegment = CSCStripSegment(thisKeyHalfStrip,thisNLayer,thisRank,stripPattern);
 
 
 	     
-             if (abs(thisKeyHalfStrip - lastKeyHalfStrip) > 1) stripSegs.push_back(tmpStripSeg);
-	     
-
-
-	     if (abs(thisKeyHalfStrip - lastKeyHalfStrip) == 1)
+	     if (abs(thisKeyHalfStrip - lastKeyHalfStrip) > 1)
 	       {
-		 
-		 stripSegs.back().updateSHits(tmpStripSeg.stripHits(), tmpStripSeg.nLayerHits());
-		 
+		 stripSegments.push_back(potentialAnotherSegment);
+		 stripSegmentsTH2F.push_back(actualSegment);
+                 stripSegments_rank.push_back(iStripPattern);
+
 	       }
 
-             sHitsPerChamber->Add(stripPattern,-1); 
-             delete stripPattern;
+	     /* ///  remove for now 
+		if (abs(thisKeyHalfStrip - lastKeyHalfStrip) == 1)
+		  {
+		
+		  stripSegments.back().updateSHits(tmpStripSeg.stripHits(), tmpStripSeg.nLayerHits());
+		
+		  }
+	     */
+             stripHitsInChamber->Add(stripPattern,-1); 
 
 
-             }
-         }
+	   } // pattern loop
+     }// WG loop
+     //     std::cout<<" ===>  End  ScanForStripSeg    "<< std::endl;
 }
 
 
