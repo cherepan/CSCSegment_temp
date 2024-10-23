@@ -46,9 +46,6 @@ public:
     typedef std::vector<const CSCStripHit*> ChamberStripHitContainer;
     typedef std::vector<const CSCRecHit2D*>::const_iterator ChamberHitContainerCIt;
 
-
-
-
     
 
     explicit CSCSegAlgoUF(const edm::ParameterSet& ps);
@@ -64,8 +61,8 @@ public:
     void FillStripMatrix(TH2F* shitsMatrix, ChamberStripHitContainer shits);
 
   
-    void ScanForWireSeg( TH2F* wireHitsInChamber, std::list<CSCWireSegment>& wireSegments, std::vector<TH2F*>& wireSegmentsTH2F/* <---- for debugging, to be removed */,  int nLayer, bool debug);
-    void ScanForStripSeg(TH2F* sHitsPerChamber, std::list<CSCStripSegment>& stripSegs, int nLayer);
+    void ScanForWireSeg( TH2F* wireHitsInChamber, std::list<CSCWireSegment>& wireSegments, std::vector<TH2F*>& wireSegmentsTH2F, std::vector<int>& wireSegements_rank/* <---- for debugging, to be removed */,  int nLayer);
+    void ScanForStripSeg(TH2F* sHitsPerChamber, std::list<CSCStripSegment>& stripSegs, std::vector<TH2F*>& stripSegmentsTH2F, std::vector<int>& stripSegments_rank/* <---- for debugging, to be removed */, int nLayer);
 
   
     void GetWireHitFromWireSeg  (CSCWireSegment  wireSeg,  ChamberWireHitContainer  whits, int* wireHitIndex);
@@ -74,9 +71,11 @@ public:
 
     std::vector< CSCSegment > prune_bad_hits(const CSCChamber* aChamber, std::vector< CSCSegment > & segments);
 
-  
 
-    void WriteTH2F(TH2F* hist);
+  
+    void PrintTH2F(TH2F* hist);
+
+  
 
     std::vector<CSCSegment> run(const CSCChamber* aChamber, const ChamberHitContainer& rechits, 
                                                             const ChamberWireHitContainer& wirehits,
