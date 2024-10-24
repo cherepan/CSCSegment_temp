@@ -118,10 +118,10 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
   //  Call Scanl for segment 4 times, requestin 6,5,4 and 3 layers; wireSegments, wireSegmentsTH2F, wireSegments_rank
   //  are updated after every call; wireHitsInChamber -> actual wire hits are updated as well, hits that have alreavy
   //  been used are removed sequentially. 
-  ScanForWireSegment(wireHitsInChamber, wireSegments, wireSegmentsTH2F, wireSegments_rank, 6);
+    ScanForWireSegment(wireHitsInChamber, wireSegments, wireSegmentsTH2F, wireSegments_rank, 6);
   //  ScanForWireSegment(wireHitsInChamber, wireSegments, wireSegmentsTH2F, wireSegments_rank, 5);
   //  ScanForWireSegment(wireHitsInChamber, wireSegments, wireSegmentsTH2F, wireSegments_rank, 4);
-  //  ScanForWireSegment(wireHitsInChamber, wireSegments, wireSegmentsTH2F, wireSegments_rank, 3);
+    ScanForWireSegment(wireHitsInChamber, wireSegments, wireSegmentsTH2F, wireSegments_rank, 3);
 
 
 
@@ -149,11 +149,13 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
   // print out segment for debugging purposes
   std::cout<<"  Wire  Hits in Chamber:  " << std::endl;
   PrintTH2F(wireHitsInChamber_clone);
+
+  std::cout<<"  N built segments: "<< wireSegmentsTH2F.size() << std::endl;
   for(auto s : wireSegments)
     {
       s.printWireSegment();  std::cout<<std::endl;
     }
-  std::cout<<" Built Strip Segments:   "<< std::endl;
+  std::cout<<" Built Wire Segments:   "<< std::endl;
   for(auto sH : wireSegmentsTH2F)
     {
       PrintTH2F(sH); std::cout<<std::endl;
@@ -749,7 +751,7 @@ void CSCSegAlgoUF::ScanForStripSegment(TH2F* stripHitsInChamber, std::list<CSCSt
 void CSCSegAlgoUF::GetWireHitFromWireSegment(CSCWireSegment wireSegment, ChamberWireHitContainer WireHitsInChamber, int* wireHitIndex) {
 
 
-  //  std::cout<<"||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||    GetWireHitFromWireSegment  ||||||||||||||||  "   << std::endl;
+  std::cout<<"||||||  GetWireHitFromWireSegment  ||||;  Number of layers with hits:   "   <<  wireSegment.nLayersWithHits() <<std::endl;
   double lowerWireGroup  = wireSegment.LowestHitInLayer();
   double higherWireGroup = wireSegment.HighestHitInLayer();
   
@@ -758,14 +760,13 @@ void CSCSegAlgoUF::GetWireHitFromWireSegment(CSCWireSegment wireSegment, Chamber
   std::cout<<" GetWireHitFromWireSegment: "<< "  lowerWireGroup "<< lowerWireGroup << "   higherWireGroup   " << higherWireGroup << std::endl;
   std::vector<int> addBackCounter; // it counts layers w/o hits
 
-  for (int i = 0; i < 6; i++)     // loop over 6 layers
+  for (int iLayer = 0; iLayer < 6; iLayer++)     // loop over 6 layers
     { 
-      double wireHitPos_from_segment = (wireSegment.wireHitsPosition())[i];
-      //      std::cout<<"  ----------------- wHit Pos       "<< wireHitPos_from_segment << "  layer      "<< i <<std::endl;
-      int wireHitIndex_from_hits_collection = -999;
+      double wireHitPosition_from_segment = (wireSegment.wireHitsPosition())[iLayer];
+      int wireHitIndex_from_hits_collection = -1;
       
-      double wireHitPosDelta = 113; //112 is max one can get
-      //std::cout << "wpos: " << wireHitPos_from_segment << std::endl;
+      double wireHitPositionDelta = 113; //112 is max one can get
+      std::cout << "wposition from segment in layer : " << iLayer  <<"     "  <<wireHitPosition_from_segment << std::endl;
       bool hitMissed = false; // ??????????
       
       //    std::cout<<"||||||||||||||  N wire hits   "<< int(WireHitsInChamber.size()) << std::endl;
@@ -774,20 +775,30 @@ void CSCSegAlgoUF::GetWireHitFromWireSegment(CSCWireSegment wireSegment, Chamber
 	  
           const CSCWireHit* tmpHit = WireHitsInChamber[hit_index]; //  this is the Chamber Wire Hit
           int wireHitLayer         = tmpHit->cscDetId().layer();
-          double wireHitPos_from_hits_collection = tmpHit->wHitPos();
 
-	  //if (i==0) std::cout << "wHitPos2: " << wireHitPos_from_hits_collection << std::endl;
-          if (wireHitLayer != (i+1) ) continue;  // skip if not in this layer
-	  //  std::cout<<"   layer     "<< i << "   wire hit position from segment    " <<wireHitPos_from_segment <<"   hit position from collection    " << wireHitPos_from_hits_collection <<std::endl;	  
-          if (wireHitPos_from_segment == 0 && /*abs(keyWH-  wireHitPos_from_hits_collection) <= 2 &&*/ (wireHitPos_from_hits_collection >= lowerWireGroup-1) && (wireHitPos_from_hits_collection <= higherWireGroup+1) )
+
+	  
+          double wireHitPosition_from_hits_collection = tmpHit->wHitPos(); // why is it float  and may take non-integer values ? 
+
+
+	  
+
+          if (wireHitLayer != (iLayer+1) ) continue;  // skip if not in this layer
+	  std::cout<<"   tmp wire hit position in layer   "<< wireHitLayer  <<"     " << wireHitPosition_from_hits_collection  << std::endl;
+	  std::cout<<" Check entry condition:   w hit positiopn "<< wireHitPosition_from_segment  <<  "  w hit posiotn from collection  "<< wireHitPosition_from_hits_collection <<std::endl;
+	  
+          if (wireHitPosition_from_segment == 0 && (wireHitPosition_from_hits_collection >= lowerWireGroup  - 1) &&
+	                                           (wireHitPosition_from_hits_collection <= higherWireGroup + 1) )
+	    // check if there is a missing layer in the segment, but there are actual hits not withn low-high segment boundaries
 	    {
 	      //
-	      // std::cout << "here:   whits Pos  " << wireHitPos_from_hits_collection <<"   wireSegment Wire Posi     " << wHitPos << "   dif to keyWH     " <<  abs(keyWH-wHitPos2) <<" lo   " <<lowerWireGroup <<" hi  " << higherWireGroup <<std::endl;
-	      //	      std::cout<<" -------------------------------------------------------------   add backcounter " << i << std::endl;
-	      //	      std::cout<<"  ever here ??? "  << std::endl;
-	      addBackCounter.push_back(i);   // store layer number where there no hit from Wire segment  and no wire hit
+
+	      std::cout<<" -------------------------------------------------------------   add backcounter " << iLayer << std::endl;
+	      std::cout<<"  ever here ??? "  << std::endl;
+	      addBackCounter.push_back(iLayer);   // store layer number where there no hit from Wire segment  and no wire hit
 	      wireHitIndex_from_hits_collection = hit_index;
-	      hitMissed = true;
+	      hitMissed_in_segment = true;
+	      
 	      break;
 	     
 	    }
@@ -795,9 +806,9 @@ void CSCSegAlgoUF::GetWireHitFromWireSegment(CSCWireSegment wireSegment, Chamber
 
 
 
-          if (abs( wireHitPos_from_segment  -  wireHitPos_from_hits_collection ) < wireHitPosDelta)
+          if (abs( wireHitPosition_from_segment  -  wireHitPosition_from_hits_collection ) < wireHitPositionDelta)
 	    {
-	      wireHitPosDelta = abs(wireHitPos_from_segment  -  wireHitPos_from_hits_collection);
+	      wireHitPositionDelta = abs(wireHitPosition_from_segment  -  wireHitPosition_from_hits_collection);
 	      wireHitIndex_from_hits_collection = hit_index; // find the closest hit 
 	    }
 
@@ -805,23 +816,23 @@ void CSCSegAlgoUF::GetWireHitFromWireSegment(CSCWireSegment wireSegment, Chamber
 
 	  
 	} // loop over hits collection
-      //      std::cout<<"  delta   " << wireHitPosDelta << "   backcounetr  size  "<< addBackCounter.size() <<std::endl;
+
 
 
       
-      if (  (  wireHitPosDelta < 113 && wireHitPos_from_segment >= 1  )    ||    ( wireHitPos_from_segment ==0 && hitMissed )   )
+      if (  (  wireHitPositionDelta < 113 && wireHitPosition_from_segment >= 1  )    ||    ( wireHitPosition_from_segment ==0 && hitMissed )   )
 	// if pattern doesn't cover some hit, and is close, to keyWH, include it // <-- It's not true!
 	{
 	  
-	  wireHitIndex[i] = wireHitIndex_from_hits_collection;
-	  if(hitMissed)
-	    std::cout<<"  Missing hits =================            " <<wireHitIndex[i] << "  position " << WireHitsInChamber[wireHitIndex_from_hits_collection]->wHitPos()<< "  and delta   " << wireHitPosDelta  <<std::endl;
+	  wireHitIndex[iLayer] = wireHitIndex_from_hits_collection;
+	  //	  if(hitMissed)
+	    //	    std::cout<<"  Missing hits =================            " <<wireHitIndex[iLayer] << "  position " << WireHitsInChamber[wireHitIndex_from_hits_collection]->wHitPos()<< "  and delta   " << wireHitPositionDelta  <<std::endl;
 	  
 	}
       else
 	{
 	  
-	  wireHitIndex[i] = -1;
+	  wireHitIndex[iLayer] = -1;
 	  
 	}
       
