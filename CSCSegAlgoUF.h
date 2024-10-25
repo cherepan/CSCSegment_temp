@@ -105,8 +105,11 @@ private:
     int nWireGroups;
     int nStrips;
 
+  
+    int MaxStripNumber;
+    int MaxWGNumber;
 
-
+  
     const CSCChamber* theChamber;
     int theStation;
     int theRing;

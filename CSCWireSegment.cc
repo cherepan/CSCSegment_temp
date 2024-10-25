@@ -104,11 +104,11 @@ double CSCWireSegment::HighestHitInLayer()
 
 void CSCWireSegment::printWireSegment()
 {
+  
   std::cout<<"  ===>>>>>>>> Print Wire Segment with key WG  "<< theKeyWG << std::endl;
   for (int i = 0; i < 6; i++)
     {
       std::cout<<"  Layer:   "<< i  << "  position:  "<< HitPosition[i] << "  n hits  "<< nHitsInLayer[i] <<std::endl;
-
     }
   
 }
