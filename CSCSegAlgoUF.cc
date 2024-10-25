@@ -30,8 +30,11 @@ CSCSegAlgoUF::CSCSegAlgoUF(const edm::ParameterSet& ps)
   : CSCSegmentAlgorithm(ps), ps_(ps), myName("CSCSegAlgoUF")
 {
   
-  make2DHits_ = new CSCMake2DRecHit( ps );
-  
+  make2DHits_       = new CSCMake2DRecHit( ps );
+  chi2Norm_3D_      = ps.getParameter<double>("NormChi2Cut3D");  // 10 
+  prePrun_          = ps.getParameter<bool>("prePrun");          // true
+  prePrunLimit_     = ps.getParameter<double>("prePrunLimit");   // 3.17
+
 }
 
 
@@ -158,38 +161,38 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 
 
-  /*
   
+  /*
   // print out segment for debugging purposes
   std::cout<<"  Wire  Hits in Chamber:  " << std::endl;
   PrintTH2F(wireHitsInChamber_clone);
 
   std::cout<<"  N built segments: "<< wireSegmentsTH2F.size() << std::endl;
-  for(auto s : wireSegments)
-    {
-      s.printWireSegment();  std::cout<<std::endl;
-    }
+  //  for(auto s : wireSegments)
+  //    {
+  //      s.printWireSegment();  std::cout<<std::endl;
+  //    }
   std::cout<<" Built Wire Segments:   "<< std::endl;
   for(auto sH : wireSegmentsTH2F)
     {
       PrintTH2F(sH); std::cout<<std::endl;
     }
-  for(auto sR : wireSegments_rank)
-    {
-      std::cout<<"strip  segment rank  "<< sR << std::endl;
-    }
-
+  //  for(auto sR : wireSegments_rank)
+  //    {
+  //      std::cout<<"wire  segment rank  "<< sR << std::endl;
+  //    }
   */
   
   
   
+  /*
   // print out segment for debugging purposes
   std::cout<<"  Strip  Hits in Chamber:  " << std::endl;
   PrintTH2F(stripHitsInChamber_clone);
-  for(auto s : stripSegments)
-    {
-      s.printStripSegment();  std::cout<<std::endl;
-    }
+  //  for(auto s : stripSegments)
+  //    {
+  //      s.printStripSegment();  std::cout<<std::endl;
+  //    }
   std::cout<<" Built Strip Segments:   "<< std::endl;
   for(auto sH : stripSegmentsTH2F)
     {
@@ -197,10 +200,10 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
     }
   for(auto sR : stripSegments_rank)
     {
-      std::cout<<" segment rank  "<< sR << std::endl;
+      std::cout<<"strip segment rank  "<< sR << std::endl;
     }
 
-  
+  */
 
 
 
@@ -214,17 +217,20 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
   
 
   //  first loop over wireSegments
-  
   for (auto i_wire = wireSegments.begin(); i_wire != wireSegments.end(); i_wire++)
     {
 
-
       int wireHitsFromWireSegment[6]   = {};        GetWireHitFromWireSegment(*i_wire,    wirehits,  wireHitsFromWireSegment);     // misleading naming; Those are matched hits, not actual hits from segment found by patterns
-      CSCWireSegment s = *i_wire;
-      s.printWireSegment();
+
       
-      std::cout<<"  print out ========   "<<wireHitsFromWireSegment[0] << std::endl;
-      std::cout<<"  print out ========   "<<wireHitsFromWireSegment[1] << std::endl;
+      //CSCWireSegment s = *i_wire;
+      //      s.printWireSegment();
+      
+      //      std::cout<<"  print out ========   "<<wireHitsFromWireSegment[0] << std::endl;
+      //      std::cout<<"  print out ========   "<<wireHitsFromWireSegment[1] << std::endl;
+
+
+
       
        ///////////////////////////////// Fill TH2F to dispaly; to be commented out 
        ChamberWireHitContainer FinalSegmentWireHits;
@@ -251,6 +257,24 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 	   int stripHitsFromStripSegment[6] = {};        GetStripHitFromStripSegment(*i_strip, striphits, stripHitsFromStripSegment);   // misleading naming; Those are matched hits, not actual hits from segment found by patterns 
 
+	   //////////////////////////////// Alors, il y a un problem grave ici;
+	   // On peut avoir un segment comme ca:
+	   //
+	   //	   Strip  Hits in Chamber:
+	   //------------------------------------------------+------------------------------+-------------------------------------------------
+	   //------------------------------------------------+-----------------------------------+--------------------------------------------
+	   //------------------------------------------------+----------------------------------------+---------------------------------------
+	   //------------------------------------------------+------------------------------------------+-------------------------------------
+	   //------------------------------------------------+-----------------------------------------+--------------------------------------
+	   //------------------------------------------------+-------------------------------------+------------------------------------------
+	   //  FINAL STRIP  SEGMENT
+	   //-------------------------------------------------------------------------------+-------------------------------------------------
+	   //------------------------------------------------------------------------------------+--------------------------------------------
+	   //-----------------------------------------------------------------------------------------+---------------------------------------
+	   //-------------------------------------------------------------------------------------------+-------------------------------------
+	   //------------------------------------------------------------------------------------------+--------------------------------------
+	   //--------------------------------------------------------------------------------------+------------------------------------------
+	   // c'est un non-sens ! Ca ne doit etre pas un segment! La meme chose se passe avec les segments de fil
 	   
 
 	   ///////////////////////////////// Fill TH2F to dispaly; to be commented out 
@@ -320,21 +344,31 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 
 	  
-	   // borrow from ST  //  -------------------------------------- to debug .... 
-	   
+	   // borrow from ST  //  -------------------------------------- to debug ....
+
+	   std::cout<<"*************************************************************"<<std::endl;
+	   std::cout<<"                  HERE DEBUG SEGMENT FIT                      "<<std::endl;
+	   std::cout<<"*************************************************************"<<std::endl;
+	   std::cout<<"********* Number of segment hits at input:    "<< csc2DRecHits_input_to_build_segment.size() << std::endl;
+
 	   CSCCondSegFit* segment_fit = new CSCCondSegFit( pset(), theChamber, csc2DRecHits_input_to_build_segment );
+	   
 	   condpass1 = false;
 	   condpass2 = false;
 	   
 	   segment_fit->setScaleXError( 1.0 );
 	   segment_fit->fit(condpass1, condpass2);
+
+	   //	   std::cout<<" chi2()  "<< segment_fit->chi2() << " ndof()   "<< segment_fit->ndof() <<"  ratio:  "<< segment_fit->chi2()/segment_fit->ndof()  << "    chi2Norm_3D_:  "<< chi2Norm_3D_ << std::endl;
 	   
 	   if(segment_fit->chi2()/segment_fit->ndof() > chi2Norm_3D_)
 	     {
 	       condpass1 = true;
-	       segment_fit->fit(condpass1, condpass2);
+	       segment_fit->fit(condpass1, condpass2); // check what mean condpass1, condpass2
 	     }
-	   
+	   //	   std::cout<<"refit  chi2()  "<< segment_fit->chi2() << " ndof()   "<< segment_fit->ndof() <<"  ratio:  "<< segment_fit->chi2()/segment_fit->ndof()  << "    chi2Norm_3D_:  "<< chi2Norm_3D_ << std::endl;
+
+	   //	   std::cout<<" segment_fit->scaleXError()   "<< segment_fit->scaleXError() << "   true/false  "<< (segment_fit->scaleXError() < 1.00005)  <<std::endl;
 	   if(segment_fit->scaleXError() < 1.00005)
 	     {
 	       LogTrace("CSCWeirdSegment") << "[CSCSegAlgoST::buildSegments] Segment ErrXX scaled and refit " << std::endl;
@@ -345,25 +379,31 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 		   segment_fit->fit(condpass1, condpass2);
 		 }
 	     }
+	   //	   std::cout<<"refit 2  chi2()  "<< segment_fit->chi2() << " ndof()   "<< segment_fit->ndof() <<"  ratio:  "<< segment_fit->chi2()/segment_fit->ndof()  << "    chi2Norm_3D_:  "<< chi2Norm_3D_ << std::endl;
 	   
-	   
-	   if(prePrun_ && (sqrt(segment_fit->scaleXError())>prePrunLimit_) &&   (segment_fit->nhits()>3))
+	   if(prePrun_ && (sqrt(segment_fit->scaleXError()) > prePrunLimit_) &&   segment_fit->nhits()>3 ) 
 	     {
 	       
 	       LogTrace("CSCWeirdSegment") << "[CSCSegAlgoST::buildSegments] Scale factor chi2uCorrection too big, pre-Prune and refit " << std::endl;
 	       
-	       csc2DRecHits_input_to_build_segment.erase(csc2DRecHits_input_to_build_segment.begin() + segment_fit->worstHit(), csc2DRecHits_input_to_build_segment.begin() + segment_fit->worstHit()+1 );
+	       csc2DRecHits_input_to_build_segment.erase(csc2DRecHits_input_to_build_segment.begin() + segment_fit->worstHit(),
+							 csc2DRecHits_input_to_build_segment.begin() + segment_fit->worstHit()  + 1 ); // here the worst hit is found and erased
+	       
+	       std::cout<<"oui ou pas; Le plus pire hit chiffre "<< segment_fit->worstHit()   <<std::endl;
 	       
 	       double tempcorr = segment_fit->scaleXError(); // save current value
-	       delete segment_fit;    
+	       delete segment_fit;
+
+	       
 	       segment_fit = new CSCCondSegFit( pset(), theChamber, csc2DRecHits_input_to_build_segment );
 	       segment_fit->setScaleXError( tempcorr ); // reset to previous value (rather than init to 1)
-	       segment_fit->fit(condpass1, condpass2);
+	       segment_fit->fit(condpass1, condpass2); 
 	       
 	     }
 	   
 	  
 	   CSCSegment temp(csc2DRecHits_input_to_build_segment,  segment_fit->intercept(),  segment_fit->localdir(),  segment_fit->covarianceMatrix(),  segment_fit->chi2() );
+	   std::cout<<">>>>  Number of segment hits at output (worst Hit(s) have been removed ):    "<< csc2DRecHits_input_to_build_segment.size() << std::endl;
 	   delete segment_fit;
 	   segments.push_back(temp);
 	   
@@ -646,7 +686,7 @@ CSCSegAlgoUF::ScanForWireSegment(TH2F* wireHitsInChamber, std::list<CSCWireSegme
 
 
 	   
-	     /*	     /// remove for now; Here he tried to merge two segments into a wider segment if by keyWG they dont differ by 1; See comment above how the keyWG is defined;
+	     /*/// remove for now; Here he tried to merge two segments into a wider segment if by keyWG they dont differ by 1; See comment above how the keyWG is defined;
 	     if (abs(lastKeyWG -  thisKeyWG) == 1)
 	       {
 		 
@@ -721,6 +761,8 @@ void CSCSegAlgoUF::ScanForStripSegment(TH2F* stripHitsInChamber, std::list<CSCSt
 
 	     
 	     stripPattern->Multiply(stripHitsInChamber);    // Multiply pattern and actual hits in the chamber
+	                                                    // It's a product of two histos with 0 and 1
+	                                                    // at corresponding positions
 	     TH2F* actualSegment  = stripPattern;
 
 
@@ -794,11 +836,9 @@ void CSCSegAlgoUF::ScanForStripSegment(TH2F* stripHitsInChamber, std::list<CSCSt
 
 
 
-void CSCSegAlgoUF::GetWireHitFromWireSegment(CSCWireSegment wireSegment, ChamberWireHitContainer WireHitsInChamber, int* wireHitIndex) {
+void CSCSegAlgoUF::GetWireHitFromWireSegment(CSCWireSegment wireSegment, ChamberWireHitContainer WireHitsInChamber, int* wireHitIndex)
+{
 
-
-
-  
   
   double lowerWireGroup  = wireSegment.LowestHitInLayer();
   double higherWireGroup = wireSegment.HighestHitInLayer();
@@ -884,36 +924,10 @@ void CSCSegAlgoUF::GetWireHitFromWireSegment(CSCWireSegment wireSegment, Chamber
 	  
 	}
 
-
-      /*
-      if (  (  wireHitPositionDelta < 113 && wireHitPosition_from_segment > 0  )    ||    ( wireHitPosition_from_segment == 0 && hitMissed_in_segment )   ) // this requires more debugging, delta is just < 113 ??? 
-	// if pattern doesn't cover some hit, and is close, to keyWH, include it // <-- It's not true!
-	{
-	  
-	  wireHitIndex[iLayer] = wireHitIndex_from_hits_collection;
-	  //	  std::cout<<"    Layer         "<<iLayer<<"     " <<wireHitIndex[iLayer] << "  position " << WireHitsInChamber[wireHitIndex_from_hits_collection]->wHitPos()<< "  and delta   " << wireHitPositionDelta  <<std::endl;
-	  //	  if(hitMissed_in_segment)
-	    //	    std::cout<<"  Missing hits =================    Layer         "<< iLayer <<"     " << "  position " << WireHitsInChamber[wireHitIndex_from_hits_collection]->wHitPos()<< "  and delta   " << wireHitPositionDelta  <<std::endl;
-	  
-	}
-      
-      else
-	
-	{
-	  
-	  wireHitIndex[iLayer] = -1;
-	  
-	}
-      */
-
-      
-      
     }// loop over layers
-
 
   
   if (addBackCounter.size() > 0 ) std::cout << "Wire add back " << addBackCounter.size() << " times" << std::endl; 
-
   if (wireSegment.nLayersWithHits() == 3 && addBackCounter.size() > 0 ) std::cout << "add back recover ALCT:   " << addBackCounter.size() << " times" << std::endl;
 
 }
@@ -989,13 +1003,13 @@ void CSCSegAlgoUF::GetStripHitFromStripSegment(CSCStripSegment stripSegment, Cha
 	}
 
 
-
-    if( stripHitPositionDelta < MaxStripNumber   &&   stripHitPosition_from_segment >= 1)
+    // 
+    if( stripHitPositionDelta < MaxStripNumber   &&   stripHitPosition_from_segment >= 1) // grap the closest hit
       {
 	stripHitIndex[iLayer] = stripHitIndex_from_hits_collection;
       }
     
-    else if(stripHitPosition_from_segment == 0 && hitMissed_in_segment)
+    else if(stripHitPosition_from_segment == 0 && hitMissed_in_segment)                  // same in case of missing hit after pattern scan
       {
 	stripHitIndex[iLayer] = stripHitIndex_from_hits_collection;
       }
@@ -1008,24 +1022,11 @@ void CSCSegAlgoUF::GetStripHitFromStripSegment(CSCStripSegment stripSegment, Cha
   }
 
   if (int(addBackCounter.size())>0) std::cout << "Strip add back " << addBackCounter.size() << " times" << std::endl;
-  if (int(addBackCounter.size())>0 && stripSegment.nLayersWithHits() == 5 && stripSegment.patternRank() == 1) std::cout << "5 hits rank1 strip add back " << addBackCounter.size() << " times" << std::endl;
+  if (int(addBackCounter.size())>0 && stripSegment.nLayersWithHits() == 5 && stripSegment.patternRank() == 1) std::cout << "5 hits rank strip add back " << addBackCounter.size() << " times" << std::endl;
   if (int(addBackCounter.size())>0 && stripSegment.nLayersWithHits() == 5 ) std::cout << "5 hits all ranks strip add back " << addBackCounter.size() << " times" << std::endl;
   if (stripSegment.nLayersWithHits()==3 && int(addBackCounter.size()) >0  ) std::cout << "add back recover CLCT" << addBackCounter.size() << " times" << std::endl;
   
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

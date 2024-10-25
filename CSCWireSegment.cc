@@ -18,22 +18,11 @@ CSCWireSegment::CSCWireSegment(int   wg,
    for (int i = 0; i < 6; i++) 
      {
 
-       wHitHists[i] = wireSegHist->ProjectionX("layer"+TString(i+1), i+1, i+1);
+       wHitHists[i] = wireSegHist->ProjectionX("layer" + TString(i+1), i+1, i+1);
        HitPosition[i] = wHitHists[i]->GetMean() + 0.5;
 
-       //     std::cout<<"CSCWireSegment:  csc wire segment  "<< HitPosition[i]  << std::endl;
-       
        if (wHitHists[i]->GetMean() == 0) HitPosition[i] = 0;
-
-       
-       // wHits[i] = GetMean(wHitHists[i]);
-       // first number is layer, second number is wirePosition in unit of wire group
-       // +0.5 is because of ROOT histogram property, GetMean() returns 4.5 for example if fill only one entry at 4 ??
-       // Vladimir: That's not true;
-
-       
        nHitsInLayer[i] = nHitHists->GetBinContent(i+1);
-       //       std::cout<<"CSCWireSegment:  nHits   "<<  nHitHists->GetBinContent(i+1)  << std::endl;
        
      }
 
@@ -45,7 +34,7 @@ CSCWireSegment::~CSCWireSegment() {}
 
 
 void CSCWireSegment::updateWHits(double* NextSegmentWireHitsPosition, int* NextSegmentNHits)
-// This way of merging segments to be tested.
+// This way of merging segments to be tested
 // If second segment is 1 WG apart merge two in a big segment, computing in each layer center of gravity of two segments
 {
 
@@ -68,7 +57,7 @@ void CSCWireSegment::updateWHits(double* NextSegmentWireHitsPosition, int* NextS
 double CSCWireSegment::LowestHitInLayer()
 {
 
-  double low = 120; // why 120 ??    Low is low, why this idiotic logic????
+  double low = 121; // why 120 ??    Low is low, why this idiotic logic????   Max N WG = 120
 
   for (int i = 0; i < 6; i++)
     {
