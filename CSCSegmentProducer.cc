@@ -45,7 +45,7 @@ void CSCSegmentProducer::produce(edm::Event& ev, const edm::EventSetup& setup) {
 
     LogDebug("CSCSegment|CSC") << "start producing segments for " << ++iev << "th event with csc data";
 
-    std::cout<<" Event  "<< ev.id().event() <<std::endl;
+    std::cout<<" ===> Event:  "<< ev.id().event() <<std::endl;
     // find the geometry (& conditions?) for this event & cache it in the builder
   
     edm::ESHandle<CSCGeometry> h = setup.getHandle(m_cscGeometryToken);
@@ -73,9 +73,9 @@ void CSCSegmentProducer::produce(edm::Event& ev, const edm::EventSetup& setup) {
     // create empty collection of Segments
     auto oc = std::make_unique<CSCSegmentCollection>();
 
-  	// fill the collection
+
     segmentBuilder_->build(cscRecHits.product(), cscWireHits.product(), cscStripHits.product(), *oc); //@@ FILL oc
-//    segmentBuilder_->build(cscRecHits.product(), *oc); //@@ FILL oc
+
 
     // put collection in event
     ev.put(std::move(oc));

@@ -96,9 +96,9 @@ std::vector<CSCSegment> CSCSegAlgoUF::run(const CSCChamber* Chamber, const Chamb
 
 std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContainer&  uwirehits,  const ChamberStripHitContainer& ustriphits)
 {
-  std::cout<<"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"<<std::endl;
-  std::cout<<"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"<<std::endl;
-  std::cout<<"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"<<std::endl;
+  //  std::cout<<"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"<<std::endl;
+  //  std::cout<<"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"<<std::endl;
+  //  std::cout<<"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"<<std::endl;
   
   std::vector<CSCSegment> segments;
 
@@ -288,7 +288,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 	     }
 	   TH2F* SegmentstripHitsInChamber = new TH2F("SegmentstripHitsInChamber", "", 2*nStrips+1, 0, 2*nStrips+1, 6 ,0, 6); // half strip stagger at 1,3,5 layer
 	   FillStripMatrix(SegmentstripHitsInChamber, FinalSegmentStripsHits);    
-	   std::cout<<"  FINAL STRIP  SEGMENT     "<< std::endl;PrintTH2F(SegmentstripHitsInChamber);
+	   //	   std::cout<<"  FINAL STRIP  SEGMENT     "<< std::endl;PrintTH2F(SegmentstripHitsInChamber);
 	   ///////////////////////////////////////////////////////////////////////////
 	
 
@@ -346,10 +346,10 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 	  
 	   // borrow from ST  //  -------------------------------------- to debug ....
 
-	   std::cout<<"*************************************************************"<<std::endl;
-	   std::cout<<"                  HERE DEBUG SEGMENT FIT                      "<<std::endl;
-	   std::cout<<"*************************************************************"<<std::endl;
-	   std::cout<<"********* Number of segment hits at input:    "<< csc2DRecHits_input_to_build_segment.size() << std::endl;
+	   //	   std::cout<<"*************************************************************"<<std::endl;
+	   //	   std::cout<<"                  HERE DEBUG SEGMENT FIT                      "<<std::endl;
+	   //	   std::cout<<"*************************************************************"<<std::endl;
+	   //	   std::cout<<"********* Number of segment hits at input:    "<< csc2DRecHits_input_to_build_segment.size() << std::endl;
 
 	   CSCCondSegFit* segment_fit = new CSCCondSegFit( pset(), theChamber, csc2DRecHits_input_to_build_segment );
 	   
@@ -403,7 +403,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 	   
 	  
 	   CSCSegment temp(csc2DRecHits_input_to_build_segment,  segment_fit->intercept(),  segment_fit->localdir(),  segment_fit->covarianceMatrix(),  segment_fit->chi2() );
-	   std::cout<<">>>>  Number of segment hits at output (worst Hit(s) have been removed ):    "<< csc2DRecHits_input_to_build_segment.size() << std::endl;
+	   //	   std::cout<<">>>>  Number of segment hits at output (worst Hit(s) have been removed ):    "<< csc2DRecHits_input_to_build_segment.size() << std::endl;
 	   delete segment_fit;
 	   segments.push_back(temp);
 	   
@@ -418,16 +418,16 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 
   
-  std::cout << "n2DSeg before prune: " << segments.size() <<  std::endl;
-  for(auto iseg : segments)std::cout<<"  nRecHits  "<< (iseg.recHits()).size() << std::endl;
+  //  std::cout << "n2DSeg before prune: " << segments.size() <<  std::endl;
+  //  for(auto iseg : segments)std::cout<<"  nRecHits  "<< (iseg.recHits()).size() << std::endl;
   
 
   
   std::vector<CSCSegment> segments_prune = prune_bad_hits(theChamber, segments); 
   
   
-  std::cout << "n2DSeg after prune: " << segments_prune.size() << std::endl;
-  for(auto iseg : segments)std::cout<<"  nRecHits  "<< (iseg.recHits()).size() << std::endl;
+  //  std::cout << "n2DSeg after prune: " << segments_prune.size() << std::endl;
+  //  for(auto iseg : segments)std::cout<<"  nRecHits  "<< (iseg.recHits()).size() << std::endl;
   return segments_prune;
   
 }
