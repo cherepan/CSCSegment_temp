@@ -50,14 +50,18 @@ double s_rows_10[nHalfStrip_10] = {0,0,0,0,1,1,1,2,3,3,3,4,4,4,5,5,5,5};
 double s_cols_10[nHalfStrip_10] = {-6,-5,-4,-3,-3,-2,-1,0,1,2,3,4,5,6,6,7,8,9};
 double s_data_10[nHalfStrip_10] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
+
 const int nHalfStrip_11 = 18;
 double s_rows_11[nHalfStrip_11] = {0,0,0,0,1,1,1,2,3,3,3,4,4,4,5,5,5,5};
 double s_cols_11[nHalfStrip_11] = {3,4,5,6,1,2,3,0,-3,-2,-1,-6,-5,-4,-9,-8,-7,-6};
 double s_data_11[nHalfStrip_11] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
+
 const int nDefinedStripPatterns = 9;
-int nHalfStrips[nDefinedStripPatterns] = {nHalfStrip_1,nHalfStrip_2,nHalfStrip_3,nHalfStrip_4,nHalfStrip_5,nHalfStrip_6,nHalfStrip_7,nHalfStrip_8,nHalfStrip_9};
-int patternRanks[nDefinedStripPatterns] = {1,2,2,3,3,4,4,5,5};
+int nHalfStrips[nDefinedStripPatterns] = {nHalfStrip_1, nHalfStrip_2, nHalfStrip_3, nHalfStrip_4, nHalfStrip_5, nHalfStrip_6, nHalfStrip_7, nHalfStrip_8, nHalfStrip_9};
+int patternRanks[nDefinedStripPatterns] = {1, 2, 2, 3, 3, 4, 4, 5, 5};
+
+
 
 double* s_rows[nDefinedStripPatterns] = {s_rows_1, s_rows_2, s_rows_3, s_rows_4, s_rows_5, s_rows_6, s_rows_7, s_rows_8, s_rows_9};
 double* s_cols[nDefinedStripPatterns] = {s_cols_1, s_cols_2, s_cols_3, s_cols_4, s_cols_5, s_cols_6, s_cols_7, s_cols_8, s_cols_9};
