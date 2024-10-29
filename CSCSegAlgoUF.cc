@@ -146,7 +146,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
   std::vector<int>           stripSegments_rank;
 
   //  Call scans for segment 4 times, requesting 6,5,4 and 3 layers; stripSegments, stripSegmentsTH2F, stripSegments_rank
-  //  are updated after every call; wireHitsInChamber -> actual wire hits are updated as well, hits that have already
+  //  are updated after every call; stripHitsInChamber -> actual strip hits are updated as well, hits that have already
   //  been used are removed sequentially.
   
   ScanForStripSegment(stripHitsInChamber, stripSegments, stripSegmentsTH2F, stripSegments_rank,  6);
@@ -156,7 +156,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 
 
-  /*
+  
 
   
   // print out segment for debugging purposes
@@ -164,10 +164,10 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
   PrintTH2F(wireHitsInChamber_clone);
 
   std::cout<<"  N built segments: "<< wireSegmentsTH2F.size() << std::endl;
-  //  for(auto s : wireSegments)
-  //    {
-  //      s.printWireSegment();  std::cout<<std::endl;
-  //    }
+  for(auto s : wireSegments)
+    {
+      s.printWireSegment();  std::cout<<std::endl;
+    }
   std::cout<<" Built Wire Segments:   "<< std::endl;
   for(auto sH : wireSegmentsTH2F)
     {
@@ -200,7 +200,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
       std::cout<<"strip segment rank  "<< sR << std::endl;
     }
 
-  */
+  
 
 
 
@@ -214,13 +214,13 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
   
 
   //  first loop over wireSegments
-  for (auto i_wire = wireSegments.begin(); i_wire != wireSegments.end(); i_wire++)
+  for (auto i_wire_segment = wireSegments.begin(); i_wire_segment != wireSegments.end(); i_wire_segment++)
     {
 
-      int wireHitsFromWireSegment[6]   = {};        GetWireHitFromWireSegment(*i_wire,    wirehits,  wireHitsFromWireSegment);     // misleading naming; Those are matched hits, not actual hits from segment found by patterns
+      int wireHitsFromWireSegment[6]   = {};        GetWireHitFromWireSegment(*i_wire_segment,    wirehits,  wireHitsFromWireSegment);     // misleading naming; Those are matched hits, not actual hits from segment found by patterns
 
       
-      //CSCWireSegment s = *i_wire;
+      //CSCWireSegment s = *i_wire_segment;
       //      s.printWireSegment();
       
       //      std::cout<<"  print out ========   "<<wireHitsFromWireSegment[0] << std::endl;
@@ -241,8 +241,8 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
        TH2F* SegmentwireHitsInChamber  = new TH2F("SegmentwireHitsInChamber",  "", nWireGroups, 0, nWireGroups, 6 ,0, 6);
        FillWireMatrix(SegmentwireHitsInChamber,  FinalSegmentWireHits);
        std::cout<<"  FINAL WIRE  SEGMENT     "<< std::endl;PrintTH2F(SegmentwireHitsInChamber);
-       double lowerWireGroup  = (*i_wire).LowestHitInLayer();
-       double higherWireGroup = (*i_wire).HighestHitInLayer();
+       double lowerWireGroup  = (*i_wire_segment).LowestHitInLayer();
+       double higherWireGroup = (*i_wire_segment).HighestHitInLayer();
        std::cout<<"  Highest half Strip  "<< higherWireGroup  << "  Lowest half Strip  "  << lowerWireGroup  <<"    min-max difference   "<<abs(higherWireGroup - lowerWireGroup) <<std::endl;
        ///////////////////////////////////////////////////////////////////////////
 
@@ -252,10 +252,9 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 	
        //  loop over strip segments
-       for (auto i_strip = stripSegments.begin(); i_strip != stripSegments.end(); i_strip++)
+       for (auto i_strip_segment = stripSegments.begin(); i_strip_segment != stripSegments.end(); i_strip_segment++)
 	 {
-
-	   int stripHitsFromStripSegment[6] = {};        GetStripHitFromStripSegment(*i_strip, striphits, stripHitsFromStripSegment);   // misleading naming; Those are matched hits, not actual hits from segment found by patterns 
+	   int stripHitsFromStripSegment[6] = {};        GetStripHitFromStripSegment(*i_strip_segment, striphits, stripHitsFromStripSegment);   // misleading naming; Those are matched hits, not actual hits from segment found by patterns 
 
 	   //////////////////////////////// Alors, il y a un problem grave ici;
 	   // On peut avoir un segment comme ca:
@@ -277,6 +276,10 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 	   // c'est un non-sens ! Ca ne doit etre pas un segment! La meme chose se passe avec les segments de fil
 	   
 
+
+
+
+	   
 	   ///////////////////////////////// Fill TH2F to dispaly; to be commented out 
 	   ChamberStripHitContainer FinalSegmentStripsHits;
 	   for(int iLayer =0; iLayer < 6; iLayer++)
@@ -286,11 +289,12 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 		   FinalSegmentStripsHits.push_back(striphits[stripHitsFromStripSegment[iLayer]]);
 		 }
 	     }
+	   
 	   TH2F* SegmentstripHitsInChamber = new TH2F("SegmentstripHitsInChamber", "", 2*nStrips+1, 0, 2*nStrips+1, 6 ,0, 6); // half strip stagger at 1,3,5 layer
 	   FillStripMatrix(SegmentstripHitsInChamber, FinalSegmentStripsHits);    
 	   std::cout<<"  FINAL STRIP  SEGMENT     "<< std::endl;PrintTH2F(SegmentstripHitsInChamber);
-	   double LowestHitInLayer  = (*i_strip).LowestHitInLayer(isME11);
-	   double HighestHitInLayer = (*i_strip).HighestHitInLayer(isME11);
+	   double LowestHitInLayer  = (*i_strip_segment).LowestHitInLayer(isME11);
+	   double HighestHitInLayer = (*i_strip_segment).HighestHitInLayer(isME11);
 	   std::cout<<"  Highest half Strip  "<< HighestHitInLayer  << "  Lowest half Strip  "  << LowestHitInLayer  <<"    min-max difference    "<<abs(HighestHitInLayer - LowestHitInLayer) <<std::endl;
 	   ///////////////////////////////////////////////////////////////////////////
 
@@ -298,13 +302,11 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 
 
-	
+	   // Here loop over 	
 	   std::vector<CSCRecHit2D> csc2DRecHits;
-
-	
 	   for (unsigned int iLayer = 0; iLayer < 6; iLayer++) // loop over layers
 	     {
-	       if (wireHitsFromWireSegment[iLayer] == -1 || stripHitsFromStripSegment[iLayer] == -1) continue;
+	       if (wireHitsFromWireSegment[iLayer] == -1 || stripHitsFromStripSegment[iLayer] == -1) continue;  // dont make a 2DRecHit if either wire or strip hit is missed in the layer
 	       
 	       const CSCWireHit*  cscwirehit   = wirehits[wireHitsFromWireSegment[iLayer]];  // 
 	       const CSCStripHit* cscstriphit  = striphits[stripHitsFromStripSegment[iLayer]]; // 
@@ -320,30 +322,27 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 	       
 	       CSCRecHit2D rechit = make2DHits_->hitFromStripAndWire(detId, cscLayer, wirehit, striphit );   //to be reviewed
 
+
+
 	       
-	       //	       std::cout << csc2DRecHits.size() << " RHs before  fiducial cut" << std::endl;
-	       if( make2DHits_->isHitInFiducial( cscLayer, rechit )  )
-		 csc2DRecHits.push_back(rechit);
-	       
-	     }
+
+	       if( make2DHits_->isHitInFiducial( cscLayer, rechit )  )   // look at CSCMake2DRecHit::isHitInFiducial(),
+		 csc2DRecHits.push_back(rechit);                         // the problem  occurs only for ME11a/b
+
+	     } // end loop over layers
 	   
 
 
 
 	
 	   //	   std::cout << csc2DRecHits.size() << " RHs survived fiducial cut" << std::endl;
-	   ChamberHitContainer csc2DRecHits_input_to_build_segment;                                         // this action here is only to reconile formats
-	   for (std::vector<CSCRecHit2D>::const_iterator it = csc2DRecHits.begin(); it != csc2DRecHits.end(); it++)
-	     csc2DRecHits_input_to_build_segment.push_back(&(*it));
+	   ChamberHitContainer csc2DRecHits_input_to_build_segment;                                                   // this action here is only to reconile formats
+	   for (std::vector<CSCRecHit2D>::const_iterator it = csc2DRecHits.begin(); it != csc2DRecHits.end(); it++)   //
+	     csc2DRecHits_input_to_build_segment.push_back(&(*it));                                                   //
 
 
 	   
 	   if ( int(csc2DRecHits_input_to_build_segment.size() ) < 3 ) continue; // proceed only if >=3 rechits
-	  
-
-
-
-
 	  
 
 
@@ -456,7 +455,6 @@ void CSCSegAlgoUF::PrintTH2F(TH2F* hist)
 	}
       std::cout << std::endl;
     }
-  
 }
 
 
@@ -481,9 +479,7 @@ void CSCSegAlgoUF::FillWireMatrix(TH2F* whitsMatrix, ChamberWireHitContainer whi
 	     
 	  int wg = (whit->wgroups())[j];
 	  cols_v.push_back(wg - 1);
-
 	  rows_v.push_back(wLayer - 1);
-
 	  data_v.push_back(1);
 	  
 	}
@@ -600,7 +596,6 @@ CSCSegAlgoUF::ScanForWireSegment(TH2F* wireHitsInChamber, std::list<CSCWireSegme
 
 
   TH1D* nonEmptyWG = wireHitsInChamber->ProjectionX();
-     
   for (int iWireGroup = 0; iWireGroup < nWireGroups; iWireGroup++)
     {
       int thisKeyWG = nWireGroups - iWireGroup;   // scan from the wider chamber side
@@ -612,32 +607,32 @@ CSCSegAlgoUF::ScanForWireSegment(TH2F* wireHitsInChamber, std::list<CSCWireSegme
 
 	 
 
-      for (int iPattern = 0; iPattern < nDefinedWirePatterns; iPattern++)  //  loop over 4 predefined wire patterns
+      for (int iWirePattern = 0; iWirePattern < nDefinedWirePatterns; iWirePattern++)  //  loop over 4 predefined wire patterns
 	{
 	   
 	  if(wireHitsInChamber->Integral() == 0) continue;  // Do not proceed if either there are no hits or if no hits left after creating a segment
 
 	  
 	  // ========================== fill up the pattern matrix =================================
-	  int nWGsInPattern = nWGsInPatterns[iPattern];
+	  int nWGsInPattern = nWGsInPatterns[iWirePattern];
 	  double w_cols_scan[nWGsInPattern] = {};
 	  for (int k = 0; k < nWGsInPattern; k++) // loop over pattern
 	    {
-	      w_cols_scan[k] = w_cols[iPattern][k] + thisKeyWG - 1;
+	      w_cols_scan[k] = w_cols[iWirePattern][k] + thisKeyWG - 1;
 	    }
 	  double w_rows_scan[nWGsInPattern] = {};
 
 	  if (theStation == 3 || theStation == 4) //  invert the order for these chambers whose layers are counted in opposite Z direction
-	    for (int k = 0; k < nWGsInPattern; k++){w_rows_scan[k] = 5-w_rows[iPattern][k];}
+	    for (int k = 0; k < nWGsInPattern; k++){w_rows_scan[k] = 5-w_rows[iWirePattern][k];}
 	  else
-	    for (int k = 0; k < nWGsInPattern; k++){ w_rows_scan[k] = w_rows[iPattern][k];}
+	    for (int k = 0; k < nWGsInPattern; k++){ w_rows_scan[k] = w_rows[iWirePattern][k];}
 	     
 	  TH2F* wirePattern = new TH2F("wirePattern","", nWireGroups, 0, nWireGroups, 6, 0, 6);
-	  wirePattern->FillN(nWGsInPattern, w_cols_scan, w_rows_scan, w_data[iPattern]);
+	  wirePattern->FillN(nWGsInPattern, w_cols_scan, w_rows_scan, w_data[iWirePattern]);
 	  //=========================================================================================
-	  //	  std::cout<<" nWireGroups " << nWireGroups << std::endl;
-	  //	  std::cout<<" print wire pattern #  "<< iPattern<<std::endl;
-	  //	  PrintTH2F(wirePattern);
+	  std::cout<<" nWireGroups          " << nWireGroups << std::endl;
+	  std::cout<<" print wire pattern #  "<< iWirePattern    << std::endl;
+	  PrintTH2F(wirePattern);
 
 
 	   
@@ -661,7 +656,7 @@ CSCSegAlgoUF::ScanForWireSegment(TH2F* wireHitsInChamber, std::list<CSCWireSegme
 	    {
 	      wireSegments.push_back( CSCWireSegment(thisKeyWG, nLayersOfSegment, wirePattern) );  // create a segment
 	      wireSegmentsTH2F.push_back(actualSegment);                                           // keep TH2F for control and debug
-	      wireSegments_rank.push_back(iPattern);
+	      wireSegments_rank.push_back(iWirePattern);
 	      wireHitsInChamber->Add( wirePattern, -1 );                                           // remove hits belonging to the segment from chamber hits
 	      
 	      continue;                                                                            // continue loop over patterns
@@ -681,7 +676,7 @@ CSCSegAlgoUF::ScanForWireSegment(TH2F* wireHitsInChamber, std::list<CSCWireSegme
 		 
 		 wireSegments.push_back(potentialAnotherSegment); //  if the WG difference between segment > 1 create  new segment
 		 wireSegmentsTH2F.push_back(actualSegment);
-		 wireSegments_rank.push_back(iPattern);
+		 wireSegments_rank.push_back(iWirePattern);
 		 
 	       }
 
@@ -753,10 +748,13 @@ void CSCSegAlgoUF::ScanForStripSegment(TH2F* stripHitsInChamber, std::list<CSCSt
 	     else
 	       for (int k = 0; k < nhalfStrips; k++) s_rows_scan[k] = s_rows[iStripPattern][k];
 	     
-	     TH2F* stripPattern = new TH2F("stripPattern","", nStrips*2+1, 0, nStrips*2+1, 6, 0, 6);
+	     TH2F* stripPattern = new TH2F("stripPattern","", nStrips*2 + 1, 0, nStrips*2 + 1, 6, 0, 6);
 	     stripPattern->FillN(nhalfStrips, s_cols_scan, s_rows_scan, s_data[iStripPattern]);
 	     // =========================================================================================
-	     //	     PrintTH2F(stripPattern);
+	     std::cout<<" n strips           " << nStrips << std::endl;
+	     std::cout<<" print strip pattern #  "<< iStripPattern    << std::endl;
+
+	     PrintTH2F(stripPattern);
 
 
 
@@ -916,7 +914,7 @@ void CSCSegAlgoUF::GetWireHitFromWireSegment(CSCWireSegment wireSegment, Chamber
 	}
       else if(hitMissed_in_segment && wireHitPosition_from_segment == 0)
 	{
-	  
+	  std::cout<<" Missed wire hit "<< std::endl;
 	  wireHitIndex[iLayer] = wireHitIndex_from_hits_collection;
 	  
 	}
@@ -941,9 +939,6 @@ void CSCSegAlgoUF::GetWireHitFromWireSegment(CSCWireSegment wireSegment, Chamber
 
 
 
-
-
-
 void CSCSegAlgoUF::GetStripHitFromStripSegment(CSCStripSegment stripSegment, ChamberStripHitContainer stripHitsInChamber, int* stripHitIndex)
 {
 
@@ -956,10 +951,11 @@ void CSCSegAlgoUF::GetStripHitFromStripSegment(CSCStripSegment stripSegment, Cha
 
   std::vector<int> addBackCounter;
 
-  for (int iLayer = 0; iLayer < 6; iLayer++) {
+  for (int iLayer = 0; iLayer < 6; iLayer++)
+    {
     double stripHitPosition_from_segment_ = (stripSegment.stripHits())[iLayer]; // comparator position in unit of half strip
     double stripHitPosition_from_segment = -1;                             // strip hit position in unit of strip
- 
+    
 
 
     if (!isME11                   && (iLayer==0 || iLayer==2 || iLayer==4) )         stripHitPosition_from_segment = ceil((stripHitPosition_from_segment_ - 1)/2.0); // convert comparator number to strip number
@@ -1014,7 +1010,7 @@ void CSCSegAlgoUF::GetStripHitFromStripSegment(CSCStripSegment stripSegment, Cha
     
     else if(stripHitPosition_from_segment == 0 && hitMissed_in_segment)                  // same in case of missing hit after pattern scan
       {
-	std::cout<<" Missed hit "<< std::endl;
+	std::cout<<" Missed strip hit "<< std::endl;
 	stripHitIndex[iLayer] = stripHitIndex_from_hits_collection;
       }
     
