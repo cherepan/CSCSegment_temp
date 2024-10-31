@@ -363,7 +363,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 	   //	   std::cout<<" chi2()  "<< segment_fit->chi2() << " ndof()   "<< segment_fit->ndof() <<"  ratio:  "<< segment_fit->chi2()/segment_fit->ndof()  << "    chi2Norm_3D_:  "<< chi2Norm_3D_ << std::endl;
 	   
-	   if(segment_fit->chi2()/segment_fit->ndof() > chi2Norm_3D_)
+	   if(segment_fit->chi2()/segment_fit->ndof() > chi2Norm_3D_) // chi2Norm_3D_ = 10
 	     {
 	       condpass1 = true;
 	       segment_fit->fit(condpass1, condpass2); // check what mean condpass1, condpass2
@@ -383,7 +383,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 	     }
 	   //	   std::cout<<"refit 2  chi2()  "<< segment_fit->chi2() << " ndof()   "<< segment_fit->ndof() <<"  ratio:  "<< segment_fit->chi2()/segment_fit->ndof()  << "    chi2Norm_3D_:  "<< chi2Norm_3D_ << std::endl;
 	   
-	   if(prePrun_ && (sqrt(segment_fit->scaleXError()) > prePrunLimit_) &&   segment_fit->nhits()>3 ) 
+	   if(prePrun_ && (sqrt(segment_fit->scaleXError()) > prePrunLimit_)    &&   segment_fit->nhits()>3 ) 
 	     {
 	       
 	       LogTrace("CSCWeirdSegment") << "[CSCSegAlgoST::buildSegments] Scale factor chi2uCorrection too big, pre-Prune and refit " << std::endl;
@@ -394,6 +394,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 	       std::cout<<"oui ou pas; Le plus pire hit chiffre "<<  segment_fit->worstHit()   <<std::endl;
 	       
 	       double tempcorr = segment_fit->scaleXError(); // save current value
+	       std::cout<<"  segment_fit->scaleXError()   " << segment_fit->scaleXError() << std::endl;
 	       delete segment_fit;
 
 	       
@@ -450,8 +451,8 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
         }
 
     }
-  return segments_prune;
   
+  return segments_prune;
 }
 
 
@@ -471,7 +472,6 @@ void CSCSegAlgoUF::PrintTH2F(TH2F* hist)
 	    }
 	  else
 	    {
-	      //		 std::cout << hist->GetBinContent(j,i);
 	      std::cout << "+"; hist->GetBinContent(j,i);
 	    }
 	  
@@ -521,23 +521,23 @@ void CSCSegAlgoUF::FillWireMatrix(TH2F* whitsMatrix, ChamberWireHitContainer whi
 
 
 
-void CSCSegAlgoUF::FillStripMatrix(TH2F* shitsMatrix, ChamberStripHitContainer shits) {
+void CSCSegAlgoUF::FillStripMatrix(TH2F* shitsMatrix, ChamberStripHitContainer strip_hits) {
 
      std::vector<double> rows_v;
      std::vector<double> cols_v;
      std::vector<double> data_v;
 
-     for (unsigned int i = 0; i < shits.size(); i++)
+     for (unsigned int i = 0; i < strip_hits.size(); i++)
        {
-         const CSCStripHit* shit = shits[i];
-         int sLayer = shit->cscDetId().layer();
+         const CSCStripHit* strip_hit = strip_hits[i];
+         int sLayer = strip_hit->cscDetId().layer();
 
 
 	 
-         if (int(shit->strips().size()) == 1) 
+         if (int(strip_hit->strips().size()) == 1) 
 	   {
 
-            int sp = (shit->strips())[0];
+            int sp = (strip_hit->strips())[0];
             if (isME11 || (!isME11 && (sLayer == 2 || sLayer == 4 || sLayer == 6) ) )
 	      {
 		cols_v.push_back(2*sp-2); //cols_v.push_back(2*sp-1);
@@ -555,10 +555,10 @@ void CSCSegAlgoUF::FillStripMatrix(TH2F* shitsMatrix, ChamberStripHitContainer s
 
 	   }
 
-         if (int(shit->strips().size()) == 3)
+         if (int(strip_hit->strips().size()) == 3)
 	   {
 
-            int sp = (shit->strips())[1];
+            int sp = (strip_hit->strips())[1];
 	    //	    int sp0 = (shit->strips())[0];            // not used
 	    //	    int sp2 = (shit->strips())[2];            // not used
 	    
@@ -572,8 +572,8 @@ void CSCSegAlgoUF::FillStripMatrix(TH2F* shitsMatrix, ChamberStripHitContainer s
 //	    std::cout<<"   s_adc  size     " <<     (shit->s_adc()).size() << "  maximum time bin    " <<shit->tmax() << "    sp 1,2,3     "
 //		     << sp0 << "  " << sp <<"   " << sp2 << "    Layer      "<< sLayer  <<std::endl;
 
-            double leftC  = (shit->s_adc())[0] + (shit->s_adc())[1] + (shit->s_adc())[2];
-            double rightC = (shit->s_adc())[8] + (shit->s_adc())[9] + (shit->s_adc())[10];
+            double leftC  = (strip_hit->s_adc())[0] + (strip_hit->s_adc())[1] + (strip_hit->s_adc())[2];
+            double rightC = (strip_hit->s_adc())[8] + (strip_hit->s_adc())[9] + (strip_hit->s_adc())[10];
 
 	    
             // above line ugly hardcode, can be improved!
