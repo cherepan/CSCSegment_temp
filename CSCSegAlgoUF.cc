@@ -123,8 +123,6 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 
   
-
-  
   std::list<CSCWireSegment> wireSegments;
   std::vector<TH2F*>        wireSegmentsTH2F;
   std::vector<int>          wireSegments_rank; //
@@ -421,12 +419,37 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 
 
-  
+
   std::cout << "n2DSeg before prune: " << segments.size() <<  std::endl;
-  //  for(auto iseg : segments)std::cout<<"  nRecHits  "<< (iseg.recHits()).size() << std::endl;
+  for(auto iseg : segments)
+    {
+      std::cout<<"before prun  nRecHits  "<< (iseg.recHits()).size() <<"  chi2  " <<iseg.chi2() << std::endl;
+      std::vector<CSCRecHit2D> theseRecHits = iseg.specificRecHits();
+      for ( std::vector<CSCRecHit2D>::const_iterator iRH = theseRecHits.begin(); iRH != theseRecHits.end(); ++iRH)
+	{
+	  const CSCLayer* csclayerRH = theChamber->layer((*iRH).cscDetId().layer());
+
+	  std::cout<<" Layer    "<< csclayerRH->id().layer() << std::endl;
+
+	}
+    }
+
+  
   std::vector<CSCSegment> segments_prune = prune_bad_hits(theChamber, segments); 
   std::cout << "n2DSeg after prune: " << segments_prune.size() << std::endl;
-  //  for(auto iseg : segments)std::cout<<"  nRecHits  "<< (iseg.recHits()).size() << std::endl;
+  for(auto iseg : segments)
+    {
+      std::cout<<"after prun  nRecHits  "<< (iseg.recHits()).size() <<"  chi2  " <<iseg.chi2() << std::endl;
+      std::vector<CSCRecHit2D> theseRecHits = iseg.specificRecHits();
+      for ( std::vector<CSCRecHit2D>::const_iterator iRH = theseRecHits.begin(); iRH != theseRecHits.end(); ++iRH)
+        {
+          const CSCLayer* csclayerRH = theChamber->layer((*iRH).cscDetId().layer());
+
+          std::cout<<" Layer    "<< csclayerRH->id().layer() << std::endl;
+	  
+        }
+
+    }
   return segments_prune;
   
 }
@@ -630,9 +653,9 @@ CSCSegAlgoUF::ScanForWireSegment(TH2F* wireHitsInChamber, std::list<CSCWireSegme
 	  TH2F* wirePattern = new TH2F("wirePattern","", nWireGroups, 0, nWireGroups, 6, 0, 6);
 	  wirePattern->FillN(nWGsInPattern, w_cols_scan, w_rows_scan, w_data[iWirePattern]);
 	  //=========================================================================================
-	  std::cout<<" nWireGroups          " << nWireGroups << std::endl;
-	  std::cout<<" print wire pattern #  "<< iWirePattern    << std::endl;
-	  PrintTH2F(wirePattern);
+	  //	  std::cout<<" nWireGroups          " << nWireGroups << std::endl;
+	  //	  std::cout<<" print wire pattern #  "<< iWirePattern    << std::endl;
+	  //	  PrintTH2F(wirePattern);
 
 
 	   
@@ -751,10 +774,10 @@ void CSCSegAlgoUF::ScanForStripSegment(TH2F* stripHitsInChamber, std::list<CSCSt
 	     TH2F* stripPattern = new TH2F("stripPattern","", nStrips*2 + 1, 0, nStrips*2 + 1, 6, 0, 6);
 	     stripPattern->FillN(nhalfStrips, s_cols_scan, s_rows_scan, s_data[iStripPattern]);
 	     // =========================================================================================
-	     std::cout<<" n strips           " << nStrips << std::endl;
-	     std::cout<<" print strip pattern #  "<< iStripPattern    << std::endl;
+	     //	     std::cout<<" n strips           " << nStrips << std::endl;
+	     //	     std::cout<<" print strip pattern #  "<< iStripPattern    << std::endl;
 
-	     PrintTH2F(stripPattern);
+	     //	     PrintTH2F(stripPattern);
 
 
 
@@ -994,7 +1017,6 @@ void CSCSegAlgoUF::GetStripHitFromStripSegment(CSCStripSegment stripSegment, Cha
 	  //  find the closest hit in hits collection
           if (abs(  stripHitPosition_from_segment -  stripHitPosition_from_hits_collection) < stripHitPositionDelta)
 	    {
-	      
 	      stripHitPositionDelta = abs(stripHitPosition_from_segment-stripHitPosition_from_hits_collection);
 	      stripHitIndex_from_hits_collection = hit_index;
 	    
@@ -1066,82 +1088,89 @@ std::vector<CSCSegment> CSCSegAlgoUF::prune_bad_hits(const CSCChamber* Chamber, 
       globZ = globalPosition.z();
       
       
-      if( ChiSquaredProbability((double)chisq,(double)(2*nhits-4)) < chi2ndfProbMin  ) {
+      if( ChiSquaredProbability((double)chisq,(double)(2*nhits-4)) < chi2ndfProbMin  )
+	{
 
-	// find (rough) "residuals" (NOT excluding the hit from the fit - speed!) of hits on segment
-	std::vector<CSCRecHit2D> theseRecHits = (*it).specificRecHits();
-	std::vector<CSCRecHit2D>::const_iterator iRH_worst;
-	//float xdist_local       = -99999.;
+	  // find (rough) "residuals" (NOT excluding the hit from the fit - speed!) of hits on segment
+	  std::vector<CSCRecHit2D> theseRecHits = (*it).specificRecHits();
+	  std::vector<CSCRecHit2D>::const_iterator iRH_worst;
+	  //float xdist_local       = -99999.;
+	  
+	  float xdist_local_worst_sig    = -99999.;
+	  float xdist_local_2ndworst_sig = -99999.;
+	  float xdist_local_sig          = -99999.;
 
-	float xdist_local_worst_sig = -99999.;
-	float xdist_local_2ndworst_sig = -99999.;
-	float xdist_local_sig       = -99999.;
-
-	hit_nr = 0;
-	hit_nr_worst = -1;
-	//hit_nr_2ndworst = -1;
-
-	for ( std::vector<CSCRecHit2D>::const_iterator iRH = theseRecHits.begin(); iRH != theseRecHits.end(); ++iRH) {
-	  //mark "worst" hit:
-	  
- 	  //float z_at_target ;
-	  //float radius      ;
-	  float loc_x_at_target;
-	  //float loc_y_at_target;
-	  //float loc_z_at_target;
-
-	  //z_at_target  = 0.;
-	  //radius       = 0.;
-	  
-	  // set the z target in CMS global coordinates:
-	  const CSCLayer* csclayerRH = theChamber->layer((*iRH).cscDetId().layer());
-	  LocalPoint localPositionRH = (*iRH).localPosition();
-	  GlobalPoint globalPositionRH = csclayerRH->toGlobal(localPositionRH);	
-	  
-	  LocalError rerrlocal = (*iRH).localPositionError();  
-	  float xxerr = rerrlocal.xx();
-	  
-	  float target_z     = globalPositionRH.z();  // target z position in cm (z pos of the hit)
-	  
-	  if(target_z > 0.) {
-	    loc_x_at_target = localPos.x() + (segDir.x()/fabs(segDir.z())*( target_z - globZ ));
-	    //loc_y_at_target = localPos.y() + (segDir.y()/fabs(segDir.z())*( target_z - globZ ));
-	    //loc_z_at_target = target_z;
-	  }
-	  else {
-	    loc_x_at_target = localPos.x() + ((-1)*segDir.x()/fabs(segDir.z())*( target_z - globZ ));
-	    //loc_y_at_target = localPos.y() + ((-1)*segDir.y()/fabs(segDir.z())*( target_z - globZ ));
-	    //loc_z_at_target = target_z;
-	  }
-	  // have to transform the segments coordinates back to the local frame... how?!!!!!!!!!!!!
-	  
-	  //xdist_local  = fabs(localPositionRH.x() - loc_x_at_target);
-	  xdist_local_sig  = fabs((localPositionRH.x()  -  loc_x_at_target)/(xxerr));
-	  
-	  if( xdist_local_sig > xdist_local_worst_sig ) {
-	    xdist_local_2ndworst_sig = xdist_local_worst_sig;
-	    xdist_local_worst_sig    = xdist_local_sig;
-	    iRH_worst            = iRH;
-	    //hit_nr_2ndworst = hit_nr_worst;
-	    hit_nr_worst = hit_nr;
-	  }
-	  else if(xdist_local_sig > xdist_local_2ndworst_sig) {
-	    xdist_local_2ndworst_sig = xdist_local_sig;
-	    //hit_nr_2ndworst = hit_nr;
-	  }
-	  ++hit_nr;
-	}
-
-	// reset worst hit number if certain criteria apply.
-	// Criteria: 2nd worst hit must be at least a factor of
-	// 1.5 better than the worst in terms of sigma:
-	if ( xdist_local_worst_sig / xdist_local_2ndworst_sig < 1.5 ) {
-	  hit_nr_worst    = -1;
+	  hit_nr = 0;
+	  hit_nr_worst = -1;
 	  //hit_nr_2ndworst = -1;
+	  
+	  for ( std::vector<CSCRecHit2D>::const_iterator iRH = theseRecHits.begin(); iRH != theseRecHits.end(); ++iRH)
+	    {
+	      //mark "worst" hit:
+	      
+	      //float z_at_target ;
+	      //float radius      ;
+	      float loc_x_at_target;
+	      //float loc_y_at_target;
+	      //float loc_z_at_target;
+	      
+	      //z_at_target  = 0.;
+	      //radius       = 0.;
+	      
+	      // set the z target in CMS global coordinates:
+	      const CSCLayer* csclayerRH = theChamber->layer((*iRH).cscDetId().layer());
+	      LocalPoint localPositionRH = (*iRH).localPosition();
+	      GlobalPoint globalPositionRH = csclayerRH->toGlobal(localPositionRH);	
+	      
+	      LocalError rerrlocal = (*iRH).localPositionError();  
+	      float xxerr = rerrlocal.xx();
+	    
+	      float target_z     = globalPositionRH.z();  // target z position in cm (z pos of the hit)
+	      
+	      if(target_z > 0.)
+		{
+		  loc_x_at_target = localPos.x() + (segDir.x()/fabs(segDir.z())*( target_z - globZ ));
+		  //loc_y_at_target = localPos.y() + (segDir.y()/fabs(segDir.z())*( target_z - globZ ));
+		  //loc_z_at_target = target_z;
+		}
+	      else
+		{
+		  loc_x_at_target = localPos.x() + ((-1)*segDir.x()/fabs(segDir.z())*( target_z - globZ ));
+		  //loc_y_at_target = localPos.y() + ((-1)*segDir.y()/fabs(segDir.z())*( target_z - globZ ));
+		  //loc_z_at_target = target_z;
+		}
+	      // have to transform the segments coordinates back to the local frame... how?!!!!!!!!!!!!
+	      
+	      //xdist_local  = fabs(localPositionRH.x() - loc_x_at_target);
+	      xdist_local_sig  = fabs((localPositionRH.x()  -  loc_x_at_target)/(xxerr));
+	      
+	      if( xdist_local_sig > xdist_local_worst_sig )
+		{
+		xdist_local_2ndworst_sig = xdist_local_worst_sig;
+		xdist_local_worst_sig    = xdist_local_sig;
+		iRH_worst            = iRH;
+		//hit_nr_2ndworst = hit_nr_worst;
+		hit_nr_worst = hit_nr;
+		}
+	      else if(xdist_local_sig > xdist_local_2ndworst_sig)
+		{
+		  xdist_local_2ndworst_sig = xdist_local_sig;
+		  //hit_nr_2ndworst = hit_nr;
+		}
+	      ++hit_nr;
+	    }
+	  
+	  // reset worst hit number if certain criteria apply.
+	  // Criteria: 2nd worst hit must be at least a factor of
+	  // 1.5 better than the worst in terms of sigma:
+	  if ( xdist_local_worst_sig / xdist_local_2ndworst_sig < 1.5 )
+	    {
+	      hit_nr_worst    = -1;
+	      //hit_nr_2ndworst = -1;
+	    }
 	}
-      }
     }
-
+    
     // if worst hit was found, refit without worst hit and select if considerably better than original fit.
     // Can also use brute force: refit all n-1 hit segments and choose one over the n hit if considerably "better"
    

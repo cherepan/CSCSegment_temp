@@ -71,7 +71,7 @@ public:
 
    /* Build groups of rechits that are separated in strip numbers and Z to save time on the segment finding
    */
-     std::vector< std::vector<const CSCRecHit2D*> > chainHits(const CSCChamber* aChamber, const ChamberHitContainer & rechits);
+  std::vector< std::vector<const CSCRecHit2D*> > chainHits(const CSCChamber* aChamber, const ChamberHitContainer & rechits);
 
 
   /**

@@ -238,11 +238,13 @@ std::vector<CSCSegment> CSCSegAlgoST::prune_bad_hits(const CSCChamber* aChamber,
 
 	  //z_at_target  = 0.;
 	  //radius       = 0.;
+
 	  
 	  // set the z target in CMS global coordinates:
 	  const CSCLayer* csclayerRH = theChamber->layer((*iRH).cscDetId().layer());
 	  LocalPoint localPositionRH = (*iRH).localPosition();
 	  GlobalPoint globalPositionRH = csclayerRH->toGlobal(localPositionRH);	
+
 	  
 	  LocalError rerrlocal = (*iRH).localPositionError();  
 	  float xxerr = rerrlocal.xx();
