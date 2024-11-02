@@ -98,14 +98,12 @@ private:
     bool prePrun_;                  /// Allow to prune a (rechit in a) segment in segment buld method
                                     /// once it passed through Chi^2-X and  chi2Correction is big.
     double prePrunLimit_;           //  what the hell is this !!!!!!!??????????? It is not even initialised but somehow used in the code!!!!!!!!!!!!!
-
-
-
+    int minHitsPerSegment_;
   
     int nWireGroups;
     int nStrips;
 
-  
+
     int MaxStripNumber;
     int MaxWGNumber;
 

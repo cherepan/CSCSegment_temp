@@ -30,10 +30,11 @@ CSCSegAlgoUF::CSCSegAlgoUF(const edm::ParameterSet& ps)
   : CSCSegmentAlgorithm(ps), ps_(ps), myName("CSCSegAlgoUF")
 {
   
-  make2DHits_       = new CSCMake2DRecHit( ps );
-  chi2Norm_3D_      = ps.getParameter<double>("NormChi2Cut3D");  // 10 
-  prePrun_          = ps.getParameter<bool>("prePrun");          // true
-  prePrunLimit_     = ps.getParameter<double>("prePrunLimit");   // 3.17
+  make2DHits_            = new CSCMake2DRecHit( ps );
+  minHitsPerSegment_     = ps.getParameter<int>("minHitsPerSegment"); // 3 hits
+  chi2Norm_3D_           = ps.getParameter<double>("NormChi2Cut3D");  // 10 
+  prePrun_               = ps.getParameter<bool>("prePrun");          // true
+  prePrunLimit_          = ps.getParameter<double>("prePrunLimit");   // 3.17
 
 }
 
@@ -96,8 +97,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::run(const CSCChamber* Chamber, const Chamb
 
 std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContainer&  uwirehits,  const ChamberStripHitContainer& ustriphits)
 {
-  std::cout<<"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"<<std::endl;
-  std::cout<<"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"<<std::endl;
+
   
   std::vector<CSCSegment> segments;
 
@@ -172,10 +172,10 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
       PrintTH2F(sH); std::cout<<std::endl;
     }
 
-    for(auto sR : wireSegments_rank)
-      {
-        std::cout<<"wire  segment rank  "<< sR << std::endl;
-      }
+  for(auto sR : wireSegments_rank)
+    {
+      std::cout<<"wire  segment rank  "<< sR << std::endl;
+    }
 
   
   
@@ -236,6 +236,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 	       FinalSegmentWireHits.push_back(wirehits[wireHitsFromWireSegment[iLayer]]);
 	     }
 	 }
+       
        TH2F* SegmentwireHitsInChamber  = new TH2F("SegmentwireHitsInChamber",  "", nWireGroups, 0, nWireGroups, 6 ,0, 6);
        FillWireMatrix(SegmentwireHitsInChamber,  FinalSegmentWireHits);
        std::cout<<"  FINAL WIRE  SEGMENT     "<< std::endl;PrintTH2F(SegmentwireHitsInChamber);
@@ -340,50 +341,76 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 
 	   
-	   if ( int(csc2DRecHits_input_to_build_segment.size() ) < 3 ) continue; // proceed only if >=3 rechits
+	   if ( int(csc2DRecHits_input_to_build_segment.size() ) < minHitsPerSegment_ ) continue; // proceed only if >=3 rechits
 	  
 
 
+	   
 
 	  
-	   // borrow from ST  //  -------------------------------------- to debug ....
+	   
 
 	   std::cout<<"*************************************************************"<<std::endl;
-	   std::cout<<"                  HERE DEBUG SEGMENT FIT                      "<<std::endl;
+	   std::cout<<"                  HERE DEBUG SEGMENT FIT                     "<<std::endl;
 	   std::cout<<"*************************************************************"<<std::endl;
-	   //	   std::cout<<"********* Number of segment hits at input:    "<< csc2DRecHits_input_to_build_segment.size() << std::endl;
 
+	   //      segment fit and prunning segments is taken from ST algo, keeping the comments. Nice modular part of code.
+	   
 	   CSCCondSegFit* segment_fit = new CSCCondSegFit( pset(), theChamber, csc2DRecHits_input_to_build_segment );
 	   
-	   condpass1 = false;
-	   condpass2 = false;
+	   condpass1 = false; // if chi2/ndof > chi2Norm_3D_
+	   condpass2 = false;  
 	   
 	   segment_fit->setScaleXError( 1.0 );
 	   segment_fit->fit(condpass1, condpass2);
 
-	   //	   std::cout<<" chi2()  "<< segment_fit->chi2() << " ndof()   "<< segment_fit->ndof() <<"  ratio:  "<< segment_fit->chi2()/segment_fit->ndof()  << "    chi2Norm_3D_:  "<< chi2Norm_3D_ << std::endl;
+	   // Attempt to handle numerical instability of the fit.
+	   // (Any segment with chi2/dof > chi2Norm_3D_ is considered
+	   // as potentially suffering from numerical instability in fit.)
+
+
+
+	   // Call the fit with prefitting option:
+	   // First fit a straight line to X-Z coordinates and calculate chi2
+	   // This is done in CSCCondSegFit::correctTheCovX()
+	   // Scale up errors in X if this chi2 is too big (default 'too big' is >20);
+	   // Then refit XY-Z with the scaled-up X errors
 	   
 	   if(segment_fit->chi2()/segment_fit->ndof() > chi2Norm_3D_) // chi2Norm_3D_ = 10
 	     {
 	       condpass1 = true;
 	       segment_fit->fit(condpass1, condpass2); // check what mean condpass1, condpass2
 	     }
-	   //	   std::cout<<"refit  chi2()  "<< segment_fit->chi2() << " ndof()   "<< segment_fit->ndof() <<"  ratio:  "<< segment_fit->chi2()/segment_fit->ndof()  << "    chi2Norm_3D_:  "<< chi2Norm_3D_ << std::endl;
 
-	   //	   std::cout<<" segment_fit->scaleXError()   "<< segment_fit->scaleXError() << "   true/false  "<< (segment_fit->scaleXError() < 1.00005)  <<std::endl;
+
+
+	   
 	   if(segment_fit->scaleXError() < 1.00005)
 	     {
 	       LogTrace("CSCWeirdSegment") << "[CSCSegAlgoST::buildSegments] Segment ErrXX scaled and refit " << std::endl;
 	       if(segment_fit->chi2()/segment_fit->ndof()>chi2Norm_3D_)
 		 {
+
+		   // Call the fit with direct adjustment of condition number;
+		   // If the attempt to improve fit by scaling up X error fails
+		   // call the procedure to make the condition number of M compatible with
+		   // the precision of X and Y measurements;
+		   // Achieved by decreasing abs value of the Covariance
+
 		   LogTrace("CSCWeirdSegment") << "[CSCSegAlgoST::buildSegments] Segment ErrXY changed to match cond. number and refit " << std::endl;
 		   condpass2 = true;
 		   segment_fit->fit(condpass1, condpass2);
 		 }
 	     }
-	   //	   std::cout<<"refit 2  chi2()  "<< segment_fit->chi2() << " ndof()   "<< segment_fit->ndof() <<"  ratio:  "<< segment_fit->chi2()/segment_fit->ndof()  << "    chi2Norm_3D_:  "<< chi2Norm_3D_ << std::endl;
-	   
-	   if(prePrun_ && (sqrt(segment_fit->scaleXError()) > prePrunLimit_)    &&   segment_fit->nhits()>3 ) 
+
+
+	   // Call the pre-pruning procedure;
+	   // If the attempt to improve fit by scaling up X error is successfull,
+	   // while scale factor for X errors is too big.
+	   // Prune the recHit inducing the biggest contribution into X-Z chi^2
+	   // and refit;
+	   std::cout<<" prePrunLimit_  " << prePrunLimit_ <<"    sqrt(segment_fit->scaleXError())   "<< sqrt(segment_fit->scaleXError()) << std::endl;
+	   if(prePrun_ && (sqrt(segment_fit->scaleXError()) > prePrunLimit_)    &&   segment_fit->nhits() >  3 /* minHitsPerSegment_  */) 
 	     {
 	       
 	       LogTrace("CSCWeirdSegment") << "[CSCSegAlgoST::buildSegments] Scale factor chi2uCorrection too big, pre-Prune and refit " << std::endl;
@@ -424,7 +451,9 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
   std::cout << "n2DSeg before prune: " << segments.size() <<  std::endl;
   for(auto iseg : segments)
     {
-      std::cout<<"before prun  nRecHits  "<< (iseg.recHits()).size() <<"  chi2  " <<iseg.chi2() << std::endl;
+      std::cout<<"before prun  nRecHits  "<< (iseg.recHits()).size() <<"  chi2  " <<iseg.chi2()
+		     << "   segment local direction theta/phi   " << iseg.localDirection().theta()<< " / " << iseg.localDirection().phi() <<std::endl;
+
       std::vector<CSCRecHit2D> theseRecHits = iseg.specificRecHits();
       for ( std::vector<CSCRecHit2D>::const_iterator iRH = theseRecHits.begin(); iRH != theseRecHits.end(); ++iRH)
 	{
@@ -440,7 +469,8 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
   std::cout << "n2DSeg after prune: " << segments_prune.size() << std::endl;
   for(auto iseg : segments)
     {
-      std::cout<<"after prun  nRecHits  "<< (iseg.recHits()).size() <<"  chi2  " <<iseg.chi2() << std::endl;
+      std::cout<<"after prun  nRecHits  "<< (iseg.recHits()).size() <<"  chi2  " <<iseg.chi2()
+	       << "   segment local direction theta/phi   " << iseg.localDirection().theta()<< " / " << iseg.localDirection().phi() <<std::endl;
       std::vector<CSCRecHit2D> theseRecHits = iseg.specificRecHits();
       for ( std::vector<CSCRecHit2D>::const_iterator iRH = theseRecHits.begin(); iRH != theseRecHits.end(); ++iRH)
         {
@@ -532,8 +562,6 @@ void CSCSegAlgoUF::FillStripMatrix(TH2F* shitsMatrix, ChamberStripHitContainer s
          const CSCStripHit* strip_hit = strip_hits[i];
          int sLayer = strip_hit->cscDetId().layer();
 
-
-	 
          if (int(strip_hit->strips().size()) == 1) 
 	   {
 
@@ -559,19 +587,7 @@ void CSCSegAlgoUF::FillStripMatrix(TH2F* shitsMatrix, ChamberStripHitContainer s
 	   {
 
             int sp = (strip_hit->strips())[1];
-	    //	    int sp0 = (shit->strips())[0];            // not used
-	    //	    int sp2 = (shit->strips())[2];            // not used
 	    
-//            double leftC = (shit->s_adc())[1]; double rightC = (shit->s_adc())[9];
-//	    shit->print();
-//	    std::cout << (shit->s_adc())[0] << " " << (shit->s_adc())[4] << " " << (shit->s_adc())[8] << std::endl;
-//	    std::cout << (shit->s_adc())[1] << " " << (shit->s_adc())[5] << " " << (shit->s_adc())[9] << std::endl;
-//	    std::cout << (shit->s_adc())[2] << " " << (shit->s_adc())[6] << " " << (shit->s_adc())[10] << std::endl;
-//	    std::cout << (shit->s_adc())[3] << " " << (shit->s_adc())[7] << " " << (shit->s_adc())[11] << std::endl;
-	    
-//	    std::cout<<"   s_adc  size     " <<     (shit->s_adc()).size() << "  maximum time bin    " <<shit->tmax() << "    sp 1,2,3     "
-//		     << sp0 << "  " << sp <<"   " << sp2 << "    Layer      "<< sLayer  <<std::endl;
-
             double leftC  = (strip_hit->s_adc())[0] + (strip_hit->s_adc())[1] + (strip_hit->s_adc())[2];
             double rightC = (strip_hit->s_adc())[8] + (strip_hit->s_adc())[9] + (strip_hit->s_adc())[10];
 
@@ -587,17 +603,14 @@ void CSCSegAlgoUF::FillStripMatrix(TH2F* shitsMatrix, ChamberStripHitContainer s
 	      {
 //if (sLayer==3) cols_v.push_back(52);
 /*else*/       leftC  >=  rightC ? cols_v.push_back(2*sp-2) : cols_v.push_back(2*sp-1);
-		//std::cout << "layer: " << sLayer << ", half strip: " << (leftC >= rightC ? (2*sp-2) : (2*sp-1)) << std::endl;
-		//std::cout << "layer: " << sLayer << ", leftC: " << leftC << ", half strip: " <<  (2*sp-2) << std::endl;
-		//std::cout << "layer: " << sLayer << ", rightC: " << rightC << ", half strip: " <<  (2*sp-1) << std::endl;
-               }
-            if (!isME11 && (sLayer == 1 || sLayer == 3 || sLayer == 5) ) {
-	      //	      std::cout<<" 2*sp - 1   "<< 2*sp-1 << "  2*sp   "<< 2*sp << std::endl;
-               leftC >= rightC ? cols_v.push_back(2*sp-1) : cols_v.push_back(2*sp);
-               } 
 
-            }
-     }
+               }
+            if (!isME11 && (sLayer == 1 || sLayer == 3 || sLayer == 5) )
+	      {
+		leftC >= rightC ? cols_v.push_back(2*sp-1) : cols_v.push_back(2*sp);
+	      } 
+	   }
+       }
      
      double* rows_a = &rows_v[0];
      double* cols_a = &cols_v[0];
@@ -605,7 +618,7 @@ void CSCSegAlgoUF::FillStripMatrix(TH2F* shitsMatrix, ChamberStripHitContainer s
 
      
      shitsMatrix->FillN(int(rows_v.size()), cols_a, rows_a, data_a);
-
+     
 }
 
 
@@ -897,7 +910,7 @@ void CSCSegAlgoUF::GetWireHitFromWireSegment(CSCWireSegment wireSegment, Chamber
           if (wireHitLayer != (iLayer+1) ) continue;  // skip if not in this layer
 
 	  
-	  // check if there is a missing layer in the segment but there are actual hits  within low-high segment boundaries	  
+	  // check if there is a missing layer in the segment but there are actual hits  within low - high (-1 and +1) segment boundaries	  
           if (   wireHitPosition_from_segment == 0                                 // after wire scan segment is missing a hit in this layer
 		 && wireHitPosition_from_hits_collection >= lowerWireGroup  - 1    // 
 		 && wireHitPosition_from_hits_collection <= higherWireGroup + 1 )  //
@@ -952,7 +965,7 @@ void CSCSegAlgoUF::GetWireHitFromWireSegment(CSCWireSegment wireSegment, Chamber
 
   
   if (addBackCounter.size() > 0 ) std::cout << "Wire add back " << addBackCounter.size() << " times" << std::endl; 
-  if (wireSegment.nLayersWithHits() == 3 && addBackCounter.size() > 0 ) std::cout << "add back recover ALCT:   " << addBackCounter.size() << " times" << std::endl;
+  if (wireSegment.nLayersWithHits() == minHitsPerSegment_ && addBackCounter.size() > 0 ) std::cout << "add back recover ALCT:   " << addBackCounter.size() << " times" << std::endl;
 
 }
 
@@ -1046,14 +1059,25 @@ void CSCSegAlgoUF::GetStripHitFromStripSegment(CSCStripSegment stripSegment, Cha
   if (int(addBackCounter.size())>0) std::cout << "Strip add back " << addBackCounter.size() << " times" << std::endl;
   if (int(addBackCounter.size())>0 && stripSegment.nLayersWithHits() == 5 && stripSegment.patternRank() == 1) std::cout << "5 hits rank strip add back " << addBackCounter.size() << " times" << std::endl;
   if (int(addBackCounter.size())>0 && stripSegment.nLayersWithHits() == 5 ) std::cout << "5 hits all ranks strip add back " << addBackCounter.size() << " times" << std::endl;
-  if (stripSegment.nLayersWithHits()==3 && int(addBackCounter.size()) >0  ) std::cout << "add back recover CLCT" << addBackCounter.size() << " times" << std::endl;
+  if (stripSegment.nLayersWithHits() == minHitsPerSegment_ && int(addBackCounter.size()) >0  ) std::cout << "add back recover CLCT" << addBackCounter.size() << " times" << std::endl;
   
 }
 
 
 
 
-std::vector<CSCSegment> CSCSegAlgoUF::prune_bad_hits(const CSCChamber* Chamber, std::vector<CSCSegment> & segments) {
+
+
+
+
+
+
+
+
+
+
+std::vector<CSCSegment> CSCSegAlgoUF::prune_bad_hits(const CSCChamber* Chamber, std::vector<CSCSegment> & segments)
+{
   
 //     std::cout<<"*************************************************************"<<std::endl;
 //     std::cout<<"Called prune_bad_hits in Chamber "<< theChamber->specs()->chamberTypeName()<<std::endl;
@@ -1073,7 +1097,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::prune_bad_hits(const CSCChamber* Chamber, 
   for(std::vector<CSCSegment>::iterator it=segments.begin(); it != segments.end(); ++it) {
     
     // do nothing for nhit <= minHitPerSegment
-    if( (*it).nRecHits() <= 3/*minHitsPerSegment hm*/) continue;
+    if( (*it).nRecHits() <= minHitsPerSegment_) continue;
     
     if( !use_brute_force ) {// find worst hit
       
@@ -1266,7 +1290,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::prune_bad_hits(const CSCChamber* Chamber, 
         // The (n-1)- segment is better than the n-hit segment.
 	// If it has at least  minHitsPerSegment  hits replace the n-hit segment
         // with this  better (n-1)-hit segment:
-        if( temp.nRecHits() >= 3/*minHitsPerSegment hm*/) {
+        if( temp.nRecHits() >= minHitsPerSegment_) {
           (*it) = temp;
         }
       }
