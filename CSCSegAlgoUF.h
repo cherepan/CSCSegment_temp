@@ -112,6 +112,9 @@ private:
     int theStation;
     int theRing;
     bool isME11;
+    bool recoverMissingWireHits_;
+    bool recoverMissingStripHits_;
+
   
     const std::string myName; 
 		

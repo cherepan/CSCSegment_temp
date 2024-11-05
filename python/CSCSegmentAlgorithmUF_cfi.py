@@ -3,15 +3,17 @@ import FWCore.ParameterSet.Config as cms
 
 UF_ME1234 = cms.PSet(
 
-    minHitsPerSegment  =  cms.int32(3),
-    prePrun            =  cms.bool(True),
-    prePrunLimit       =  cms.double(3.17),
-    NormChi2Cut3D      =  cms.double(10.0),
-    NormChi2Cut2D      =  cms.double(20.0),
-    CorrectTheErrors   =  cms.bool(True),
-    CSCDebug           =  cms.untracked.bool(False),
-    onlyBestSegment    =  cms.bool(False),
+    minHitsPerSegment                 =  cms.int32(3),
+    prePrun                           =  cms.bool(True),
+    prePrunLimit                      =  cms.double(3.17),
+    NormChi2Cut3D                     =  cms.double(10.0),
+    NormChi2Cut2D                     =  cms.double(20.0),
+    CorrectTheErrors                  =  cms.bool(True),
+    CSCDebug                          =  cms.untracked.bool(False),
 
+
+    recoverMissingWireHits            =  cms.bool(False),   # recent implementation creates wierd segments, set to False (To be reviewed)
+    recoverMissingStripHits           =  cms.bool(False),   # recent implementation creates wierd segments, set to False (To be reviewed) 
 
 
 
@@ -73,7 +75,8 @@ UF_ME1A = cms.PSet(
     CSCDebug = cms.untracked.bool(False),
     onlyBestSegment = cms.bool(False),
 
-
+    recoverMissingWireHits            =  cms.bool(False),   # recent implementation creates wierd segments, set to False (To be reviewed)
+    recoverMissingStripHits           =  cms.bool(False),   # recent implementation creates wierd segments, set to False (To be reviewed) 
 
     
 #################################################

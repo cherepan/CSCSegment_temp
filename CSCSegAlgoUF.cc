@@ -30,11 +30,15 @@ CSCSegAlgoUF::CSCSegAlgoUF(const edm::ParameterSet& ps)
   : CSCSegmentAlgorithm(ps), ps_(ps), myName("CSCSegAlgoUF")
 {
   
-  make2DHits_            = new CSCMake2DRecHit( ps );
-  minHitsPerSegment_     = ps.getParameter<int>("minHitsPerSegment"); // 3 hits
-  chi2Norm_3D_           = ps.getParameter<double>("NormChi2Cut3D");  // 10 
-  prePrun_               = ps.getParameter<bool>("prePrun");          // true
-  prePrunLimit_          = ps.getParameter<double>("prePrunLimit");   // 3.17
+  make2DHits_                  = new CSCMake2DRecHit( ps );
+  minHitsPerSegment_           = ps.getParameter<int>("minHitsPerSegment"); // 3 hits
+  chi2Norm_3D_                 = ps.getParameter<double>("NormChi2Cut3D");  // 10 
+  prePrun_                     = ps.getParameter<bool>("prePrun");          // true
+  prePrunLimit_                = ps.getParameter<double>("prePrunLimit");   // 3.17
+  recoverMissingWireHits_      = ps.getParameter<bool>("recoverMissingWireHits");
+  recoverMissingStripHits_     = ps.getParameter<bool>("recoverMissingStripHits");
+
+
 
 }
 
@@ -785,10 +789,10 @@ void CSCSegAlgoUF::ScanForStripSegment(TH2F* stripHitsInChamber, std::list<CSCSt
 	     TH2F* stripPattern = new TH2F("stripPattern","", nStrips*2 + 1, 0, nStrips*2 + 1, 6, 0, 6);
 	     stripPattern->FillN(nhalfStrips, s_cols_scan, s_rows_scan, s_data[iStripPattern]);
 	     // =========================================================================================
-	     std::cout<<" n strips           " << nStrips << std::endl;
-	     std::cout<<" print strip pattern #  "<< iStripPattern    << std::endl;
+	     //	     std::cout<<" n strips           " << nStrips << std::endl;
+	     //	     std::cout<<" print strip pattern #  "<< iStripPattern    << std::endl;
 
-	     PrintTH2F(stripPattern);
+	     //	     PrintTH2F(stripPattern);
 
 
 
@@ -946,7 +950,7 @@ void CSCSegAlgoUF::GetWireHitFromWireSegment(CSCWireSegment wireSegment, Chamber
 	  wireHitIndex[iLayer] = wireHitIndex_from_hits_collection;
 	  
 	}
-      else if(hitMissed_in_segment && wireHitPosition_from_segment == 0)
+      else if(hitMissed_in_segment && wireHitPosition_from_segment == 0 && recoverMissingWireHits_)
 	{
 	  std::cout<<" Missed wire hit "<< std::endl;
 	  wireHitIndex[iLayer] = wireHitIndex_from_hits_collection;
@@ -1038,10 +1042,12 @@ void CSCSegAlgoUF::GetStripHitFromStripSegment(CSCStripSegment stripSegment, Cha
     // 
     if( stripHitPositionDelta < MaxStripNumber   &&   stripHitPosition_from_segment >= 1) // grap the closest hit
       {
+	
 	stripHitIndex[iLayer] = stripHitIndex_from_hits_collection;
+	
       }
     
-    else if(stripHitPosition_from_segment == 0 && hitMissed_in_segment)                  // same in case of missing hit after pattern scan
+    else if(stripHitPosition_from_segment == 0 && hitMissed_in_segment && recoverMissingStripHits_)                  // same in case of missing hit after pattern scan
       {
 	std::cout<<" Missed strip hit "<< std::endl;
 	stripHitIndex[iLayer] = stripHitIndex_from_hits_collection;
