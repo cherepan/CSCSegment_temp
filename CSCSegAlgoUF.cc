@@ -244,6 +244,8 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
        double lowerWireGroup  = (*i_wire_segment).LowestHitInLayer();
        double higherWireGroup = (*i_wire_segment).HighestHitInLayer();
        std::cout<<"  Highest wire group  "<< higherWireGroup  << "  Lowest half Strip  "  << lowerWireGroup  <<"    min-max difference   "<<abs(higherWireGroup - lowerWireGroup) <<std::endl;
+       std::cout<<"   print wire segment   "<< std::endl;
+       (*i_wire_segment).printWireSegment();
        ///////////////////////////////////////////////////////////////////////////
 
 
@@ -351,9 +353,9 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 	  
 	   
 
-	   std::cout<<"*************************************************************"<<std::endl;
-	   std::cout<<"                  HERE DEBUG SEGMENT FIT                     "<<std::endl;
-	   std::cout<<"*************************************************************"<<std::endl;
+	   //	   std::cout<<"*************************************************************"<<std::endl;
+	   //	   std::cout<<"                  HERE DEBUG SEGMENT FIT                     "<<std::endl;
+	   //	   std::cout<<"*************************************************************"<<std::endl;
 
 	   //      segment fit and prunning segments is taken from ST algo, keeping the comments. Nice modular part of code.
 	   
@@ -449,18 +451,23 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 
 
+
+  
+
+
+
   std::cout << "n2DSeg before prune: " << segments.size() <<  std::endl;
   for(auto iseg : segments)
     {
-      std::cout<<"before prun  nRecHits  "<< (iseg.recHits()).size() <<"  chi2  " <<iseg.chi2()
-		     << "   segment local direction theta/phi   " << iseg.localDirection().theta()<< " / " << iseg.localDirection().phi() <<std::endl;
+      //      std::cout<<"before prun  nRecHits  "<< (iseg.recHits()).size() <<"  chi2  " <<iseg.chi2()
+	//		     << "   segment local direction theta/phi   " << iseg.localDirection().theta()<< " / " << iseg.localDirection().phi() <<std::endl;
 
       std::vector<CSCRecHit2D> theseRecHits = iseg.specificRecHits();
       for ( std::vector<CSCRecHit2D>::const_iterator iRH = theseRecHits.begin(); iRH != theseRecHits.end(); ++iRH)
 	{
 	  const CSCLayer* csclayerRH = theChamber->layer((*iRH).cscDetId().layer());
 
-	  std::cout<<" Layer    "<< csclayerRH->id().layer() << std::endl;
+	  //	  std::cout<<" Layer    "<< csclayerRH->id().layer() << std::endl;
 
 	}
     }
@@ -470,18 +477,22 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
   std::cout << "n2DSeg after prune: " << segments_prune.size() << std::endl;
   for(auto iseg : segments)
     {
-      std::cout<<"after prun  nRecHits  "<< (iseg.recHits()).size() <<"  chi2  " <<iseg.chi2()
-	       << "   segment local direction theta/phi   " << iseg.localDirection().theta()<< " / " << iseg.localDirection().phi() <<std::endl;
+      //      std::cout<<"after prun  nRecHits  "<< (iseg.recHits()).size() <<"  chi2  " <<iseg.chi2()
+      //	       << "   segment local direction theta/phi   " << iseg.localDirection().theta()<< " / " << iseg.localDirection().phi() <<std::endl;
       std::vector<CSCRecHit2D> theseRecHits = iseg.specificRecHits();
       for ( std::vector<CSCRecHit2D>::const_iterator iRH = theseRecHits.begin(); iRH != theseRecHits.end(); ++iRH)
         {
-          const CSCLayer* csclayerRH = theChamber->layer((*iRH).cscDetId().layer());
+	  const CSCLayer* csclayerRH = theChamber->layer((*iRH).cscDetId().layer());
 
-          std::cout<<" Layer    "<< csclayerRH->id().layer() << std::endl;
+          //std::cout<<" Layer    "<< csclayerRH->id().layer() << std::endl;
 	  
         }
 
     }
+
+
+
+
   
   return segments_prune;
 }
@@ -966,7 +977,7 @@ void CSCSegAlgoUF::GetWireHitFromWireSegment(CSCWireSegment wireSegment, Chamber
     }// loop over layers
 
   
-  if (addBackCounter.size() > 0 ) std::cout << "Wire add back " << addBackCounter.size() << " times" << std::endl; 
+  if (addBackCounter.size() > 0  && recoverMissingWireHits_ ) std::cout << "Wire add back " << addBackCounter.size() << " times" << std::endl; 
   if (wireSegment.nLayersWithHits() == minHitsPerSegment_ && addBackCounter.size() > 0 ) std::cout << "add back recover ALCT:   " << addBackCounter.size() << " times" << std::endl;
 
 }
@@ -1060,10 +1071,12 @@ void CSCSegAlgoUF::GetStripHitFromStripSegment(CSCStripSegment stripSegment, Cha
       
   }
 
-  if (int(addBackCounter.size())>0) std::cout << "Strip add back " << addBackCounter.size() << " times" << std::endl;
-  if (int(addBackCounter.size())>0 && stripSegment.nLayersWithHits() == 5 && stripSegment.patternRank() == 1) std::cout << "5 hits rank strip add back " << addBackCounter.size() << " times" << std::endl;
-  if (int(addBackCounter.size())>0 && stripSegment.nLayersWithHits() == 5 ) std::cout << "5 hits all ranks strip add back " << addBackCounter.size() << " times" << std::endl;
-  if (stripSegment.nLayersWithHits() == minHitsPerSegment_ && int(addBackCounter.size()) >0  ) std::cout << "add back recover CLCT" << addBackCounter.size() << " times" << std::endl;
+  if ( addBackCounter.size() >0  && recoverMissingStripHits_  ) std::cout << "Strip add back " << addBackCounter.size() << " times" << std::endl;
+
+  
+  //  if (int(addBackCounter.size())>0 && stripSegment.nLayersWithHits() == 5 && stripSegment.patternRank() == 1) std::cout << "5 hits rank strip add back " << addBackCounter.size() << " times" << std::endl;
+  //  if (int(addBackCounter.size())>0 && stripSegment.nLayersWithHits() == 5 ) std::cout << "5 hits all ranks strip add back " << addBackCounter.size() << " times" << std::endl;
+  //  if (stripSegment.nLayersWithHits() == minHitsPerSegment_ && int(addBackCounter.size()) >0  ) std::cout << "add back recover CLCT" << addBackCounter.size() << " times" << std::endl;
   
 }
 
