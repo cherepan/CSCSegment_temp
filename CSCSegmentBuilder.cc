@@ -167,8 +167,8 @@ void CSCSegmentBuilder::build(const CSCRecHit2DCollection* recHits,
         
         std::vector<CSCSegment> segv = algoMap[chamber->specs()->chamberTypeName()]->run(chamber, cscRecHits, cscWireHits, cscStripHits, recoConditions_);
 
-        LogDebug("CSCSegment|CSC") << "found " << segv.size() << " segments in chamber " << *chIt;
-
+	//        LogDebug("CSCSegment|CSC") << "found " << segv.size() << " segments in chamber " << *chIt;
+	std::cout<<"  ===================== FOUND   " << segv.size() << " segments in chamber " << *chIt << std::endl<<std::endl<<std::endl;
         // Add the segments to master collection
         oc.put((*chIt), segv.begin(), segv.end());
     }

@@ -44,7 +44,8 @@ CSCSegmentProducer::~CSCSegmentProducer() {
 void CSCSegmentProducer::produce(edm::Event& ev, const edm::EventSetup& setup) {
 
     LogDebug("CSCSegment|CSC") << "start producing segments for " << ++iev << "th event with csc data";
-
+    std::cout<<std::endl<<std::endl<<std::endl<<std::endl<<std::endl;
+    std::cout<<" |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| "<< std::endl;
     std::cout<<" ===> Event:  "<< ev.id().event() <<std::endl;
     // find the geometry (& conditions?) for this event & cache it in the builder
   

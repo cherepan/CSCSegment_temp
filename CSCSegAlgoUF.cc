@@ -160,10 +160,14 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
   
   
   // print out segment for debugging purposes
+
+
+  //  if(wireSegments.size() * stripSegments.size() > 1 ){
+  
   std::cout<<"  Wire  Hits in Chamber:  " << std::endl;
   PrintTH2F(wireHitsInChamber_clone);
 
-  /*
+
   std::cout<<"  N built segments: "<< wireSegmentsTH2F.size() << std::endl;
   for(auto s : wireSegments)
     {
@@ -174,7 +178,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
     {
       PrintTH2F(sH); std::cout<<std::endl;
     }
-
+  /*
   for(auto sR : wireSegments_rank)
     {
       std::cout<<"wire  segment rank  "<< sR << std::endl;
@@ -188,7 +192,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
   PrintTH2F(stripHitsInChamber_clone);
 
 
-  /*
+  
   for(auto s : stripSegments)
     {
       s.printStripSegment();  std::cout<<std::endl;
@@ -200,7 +204,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
     {
       PrintTH2F(sH); std::cout<<std::endl;
     }
-  
+  /*
   for(auto sR : stripSegments_rank)
     {
       std::cout<<"strip segment rank  "<< sR << std::endl;
@@ -209,7 +213,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
   */
 
 
-
+  //  }  // <--- if(wireSegments.size() * stripSegments.size() > 1 ){     // for debug
   
   
   std::cout <<  " nWireSegments: " << wireSegments.size() << 
@@ -247,7 +251,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
        
        TH2F* SegmentwireHitsInChamber  = new TH2F("SegmentwireHitsInChamber",  "", nWireGroups, 0, nWireGroups, 6 ,0, 6);
        FillWireMatrix(SegmentwireHitsInChamber,  FinalSegmentWireHits);
-       //       std::cout<<"  FINAL WIRE  SEGMENT     "<< std::endl;PrintTH2F(SegmentwireHitsInChamber);
+       std::cout<<"  FINAL WIRE  SEGMENT     "<< std::endl;PrintTH2F(SegmentwireHitsInChamber);
        double lowerWireGroup  = (*i_wire_segment).LowestHitInLayer();
        double higherWireGroup = (*i_wire_segment).HighestHitInLayer();
        //       std::cout<<"  Highest wire group  "<< higherWireGroup  << "  Lowest half Strip  "  << lowerWireGroup  <<"    min-max difference   "<<abs(higherWireGroup - lowerWireGroup) <<std::endl;
@@ -301,7 +305,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 	   
 	   TH2F* SegmentstripHitsInChamber = new TH2F("SegmentstripHitsInChamber", "", 2*nStrips+1, 0, 2*nStrips+1, 6 ,0, 6); // half strip stagger at 1,3,5 layer
 	   FillStripMatrix(SegmentstripHitsInChamber, FinalSegmentStripsHits);    
-	   //	   std::cout<<"  FINAL STRIP  SEGMENT     "<< std::endl;PrintTH2F(SegmentstripHitsInChamber);
+	   std::cout<<"  FINAL STRIP  SEGMENT     "<< std::endl;PrintTH2F(SegmentstripHitsInChamber);
 	   double LowestHitInLayer  = (*i_strip_segment).LowestHitInLayer(isME11);
 	   double HighestHitInLayer = (*i_strip_segment).HighestHitInLayer(isME11);
 	   //	   std::cout<<"  Highest half Strip  "<< HighestHitInLayer  << "  Lowest half Strip  "  << LowestHitInLayer  <<"    min-max difference    "<<abs(HighestHitInLayer - LowestHitInLayer) <<std::endl;
@@ -463,7 +467,7 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
 
 
-  std::cout << "n2DSeg before prune: " << segments.size() <<  std::endl;
+  //  std::cout << "n2DSeg before prune: " << segments.size() <<  std::endl;
   for(auto iseg : segments)
     {
       //      std::cout<<"before prun  nRecHits  "<< (iseg.recHits()).size() <<"  chi2  " <<iseg.chi2()
@@ -497,7 +501,10 @@ std::vector<CSCSegment> CSCSegAlgoUF::buildSegments(const ChamberWireHitContaine
 
     }
 
-
+  for(auto iseg: segments_prune)
+    {
+      std::cout<<"   Segments Local X/Y  "<<iseg.localPosition().x() <<" /   " << iseg.localPosition().y() << std::endl;
+    }
 
 
   
