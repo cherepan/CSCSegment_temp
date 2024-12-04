@@ -904,7 +904,7 @@ void CSCSegAlgoUF::ScanForStripSegment(TH2F* stripHitsInChamber, std::list<CSCSt
 
 
 	     
-	     if (abs(thisKeyHalfStrip - lastKeyHalfStrip) > 1)
+	     if (abs(thisKeyHalfStrip - lastKeyHalfStrip) > 2)
 	       {
 		 stripSegments.push_back(potentialAnotherSegment);
 		 stripSegmentsTH2F.push_back(actualSegment);
@@ -913,14 +913,15 @@ void CSCSegAlgoUF::ScanForStripSegment(TH2F* stripHitsInChamber, std::list<CSCSt
 	       }
 	     std::cout<<" keyHalf strip difference:    "<< abs(thisKeyHalfStrip - lastKeyHalfStrip) << std::endl;
 
-	     /* ///  remove for now 
-		if (abs(thisKeyHalfStrip - lastKeyHalfStrip) == 1)
-		  {
+	     ///  remove for now 
+	     //		if (abs(thisKeyHalfStrip - lastKeyHalfStrip) == 1)
+	     if( abs(thisKeyHalfStrip - lastKeyHalfStrip) == 1 or abs(thisKeyHalfStrip - lastKeyHalfStrip) == 2)
+	       {
+		 
+		 stripSegments.back().updateSHits(potentialAnotherSegment.stripHits(), potentialAnotherSegment.nLayerHits());
+		 
+	       }
 		
-		  stripSegments.back().updateSHits(tmpStripSeg.stripHits(), tmpStripSeg.nLayerHits());
-		
-		  }
-	     */
 
 	     
 	     
