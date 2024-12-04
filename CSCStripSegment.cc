@@ -99,6 +99,21 @@ void CSCStripSegment::printStripSegment()
 
 }
 
+bool CSCStripSegment::SegmentWithMissingLayers()
+{
+  bool out = false;
+
+  if(nLayersWithHits() == 3)
+    {
+      if( (numberOfHitsInLayer[0] == 0 && numberOfHitsInLayer[1] == 0 &&  numberOfHitsInLayer[5] == 0 )   ||
+	  (numberOfHitsInLayer[0] == 0 && numberOfHitsInLayer[4] == 0 &&  numberOfHitsInLayer[5] == 0 )) out = true;
+	
+    }
+
+
+  return out;
+}
+
 
 
 /*

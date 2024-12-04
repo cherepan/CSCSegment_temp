@@ -21,7 +21,10 @@ public:
 
   double LowestHitInLayer(bool isME11);
   double HighestHitInLayer(bool isME11);
+  
+  bool   SegmentWithMissingLayers();
 
+  
   ~CSCStripSegment();
 
 private:

@@ -63,7 +63,6 @@ double CSCWireSegment::LowestHitInLayer()
     {
       
       double tmpHit = HitPosition[i];
-      
       if (tmpHit < low && HitPosition[i] > 0) low = tmpHit;
       
     }
@@ -82,14 +81,16 @@ double CSCWireSegment::HighestHitInLayer()
     {
       
       double tmpHit = HitPosition[i];
-      
       if (tmpHit > high && HitPosition[i] > 0) high = tmpHit;
       
     }
-
   return high;
-
 }
+
+
+//bool CSCWireSegment::
+
+
 
 void CSCWireSegment::printWireSegment()
 {
@@ -101,6 +102,24 @@ void CSCWireSegment::printWireSegment()
     }
   
 }
+
+bool CSCWireSegment::SegmentWithMissingLayers()
+{
+  bool out = false;
+
+  if(nLayersWithHits() == 3)
+    {
+      if( (nHitsInLayer[0] == 0 && nHitsInLayer[1] == 0 &&  nHitsInLayer[5] == 0 )   ||
+          (nHitsInLayer[0] == 0 && nHitsInLayer[4] == 0 &&  nHitsInLayer[5] == 0 )) out = true;
+
+    }
+
+
+  return out;
+}
+
+
+
 
 
 /*

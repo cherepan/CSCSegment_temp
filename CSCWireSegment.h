@@ -22,6 +22,7 @@ public:
   void   printWireSegment();
   double LowestHitInLayer();
   double HighestHitInLayer();
+  bool   SegmentWithMissingLayers();
   TH2F*  getPatternMatrix() { return wirePattern; }
   
   ~CSCWireSegment();
