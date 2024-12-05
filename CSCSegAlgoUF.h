@@ -114,6 +114,9 @@ private:
     bool isME11;
     bool recoverMissingWireHits_;
     bool recoverMissingStripHits_;
+    bool combineCloseWireSegments_;
+    bool combineCloseStripSegments_;
+
 
   
     const std::string myName; 
