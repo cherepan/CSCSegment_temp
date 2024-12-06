@@ -80,6 +80,10 @@ UF_ME1A = cms.PSet(
 
     recoverMissingWireHits            =  cms.bool(False),   # recent implementation creates wierd segments, set to False (To be reviewed)
     recoverMissingStripHits           =  cms.bool(False),   # recent implementation creates wierd segments, set to False (To be reviewed) 
+    combineCloseWireSegments          =  cms.bool(False),   # Self explaining
+    combineCloseStripSegments         =  cms.bool(False),   # Self explaining
+
+
 
     
 #################################################
